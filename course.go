@@ -12,6 +12,11 @@ type Course struct {
 	Code    string `json:"code"`
 	Credits int    `json:"credits"`
 
+	// Relations
+	Department   *Department  `json:"department"`
+	DepartmentID int          `json:"departmentId"`
+	Professors   *[]Professor `json:"professors"`
+
 	// CreatedAt and UpdatedAt are used for tracking
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
@@ -27,9 +32,13 @@ type CourseFilter struct {
 
 type CourseService interface {
 	GetCourseById(ctx context.Context, id int) (*Course, error)
+
 	GetCourses(ctx context.Context, filter CourseFilter) (*[]Course, int, error)
+
 	CreateCourse(ctx context.Context, course *Course) error
+
 	UpdateCourse(ctx context.Context, id int, upd *CourseUpdate) (*Course, error)
+
 	DeleteCourse(ctx context.Context, id int) error
 }
 

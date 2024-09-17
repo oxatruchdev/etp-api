@@ -24,8 +24,11 @@ type Country struct {
 
 type CountryService interface {
 	GetCountryById(ctx context.Context, id int) (*Country, error)
+
 	GetCountries(ctx context.Context) (*[]Country, error)
+
 	CreateCountry(ctx context.Context, country *Country) error
+
 	UpdateCountry(ctx context.Context, id int, upd *CountryUpdate) (*Country, error)
 }
 

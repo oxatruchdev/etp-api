@@ -9,7 +9,6 @@ type ProfessorRating struct {
 	ID int `json:"id"`
 
 	// Data related to the review itself
-
 	WouldTakeAgain      bool   `json:"wouldTakeAgain"`
 	MandatoryAttendance bool   `json:"mandatoryAttendance"`
 	Grade               string `json:"grade"`
@@ -30,6 +29,14 @@ type ProfessorRating struct {
 	UpdatedAt time.Time `json:"updatedAt"`
 }
 
+type ProfessorRatingFilter struct {
+	ProfessorId *int `json:"professorId"`
+	CourseId    *int `json:"courseId"`
+
+	Offset int `json:"offset"`
+	Limit  int `json:"limit"`
+}
+
 type ProfessorRatingService interface {
 	// Creates a new professor rating
 	CreateProfessorRating(ctx context.Context, professorRating *ProfessorRating) error
@@ -37,6 +44,10 @@ type ProfessorRatingService interface {
 	// Approves a professor rating
 	// It is necessary to have at least 3 approvals in order to be approved
 	ApproveProfessorRating(ctx context.Context, id int) error
+
+	// Get all professor ratings
+	// Can be filter by the course and/or the professor
+	GetProfessorRatings(ctx context.Context, filter ProfessorFilter) (*[]ProfessorRating, error)
 
 	// Deletes a professor rating
 	DeleteProfessorRating(ctx context.Context, id int) error

@@ -17,9 +17,9 @@ type School struct {
 	CountryID int      `json:"countryId"`
 
 	// Relations
-	Departments   *[]Department    `json:"departments"`
-	Professors    *[]Professor     `json:"professors"`
-	SchoolRatings *[]SchoolRatings `json:"ratings"`
+	Departments   *[]Department   `json:"departments"`
+	Professors    *[]Professor    `json:"professors"`
+	SchoolRatings *[]SchoolRating `json:"ratings"`
 
 	// CreatedAt and UpdatedAt are used for tracking
 	CreatedAt time.Time `json:"createdAt"`
@@ -35,11 +35,23 @@ type SchoolFilter struct {
 }
 
 type SchoolService interface {
+	// Gets a school by id
 	GetSchoolById(ctx context.Context, id int) (*School, error)
+
+	// Gets all schools
+	// Offset and Limit are used for pagination
 	GetSchools(ctx context.Context, filter SchoolFilter) (*[]School, int, error)
-	GetSchoolRatings(ctx context.Context, id int) (*[]SchoolRatings, error)
+
+	// Gets the school ratings for a school
+	GetSchoolRatings(ctx context.Context, id int) (*[]SchoolRating, error)
+
+	// Creates a school
 	CreateSchool(ctx context.Context, school *School) error
+
+	// Updates a school
 	UpdateSchool(ctx context.Context, id int, upd *SchoolUpdate) (*School, error)
+
+	// Deletes a school
 	DeleteSchool(ctx context.Context, id int) error
 }
 
