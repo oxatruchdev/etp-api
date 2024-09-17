@@ -30,20 +30,20 @@ type ProfessorRating struct {
 	UpdatedAt time.Time `json:"updatedAt"`
 }
 
-type ProfessorRatingsService interface {
+type ProfessorRatingService interface {
 	// Creates a new professor rating
-	CreateProfessorRatings(ctx context.Context, professorRatings *ProfessorRating) error
+	CreateProfessorRating(ctx context.Context, professorRating *ProfessorRating) error
 
 	// Approves a professor rating
 	// It is necessary to have at least 3 approvals in order to be approved
 	ApproveProfessorRating(ctx context.Context, id int) error
 
 	// Deletes a professor rating
-	DeleteProfessorRatings(ctx context.Context, id int) error
+	DeleteProfessorRating(ctx context.Context, id int) error
 
 	// Updates a professor rating
 	// The rating will be put in a pending state until approved
-	UpdateProfessorRatings(ctx context.Context, id int, upd *ProfessorRatingUpdate) (*ProfessorRating, error)
+	UpdateProfessorRating(ctx context.Context, id int, upd *ProfessorRatingUpdate) (*ProfessorRating, error)
 }
 
 type ProfessorRatingUpdate struct {

@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-type SchoolRatings struct {
+type SchoolRating struct {
 	ID int `json:"id"`
 
 	// Data related to the rating
@@ -23,15 +23,15 @@ type SchoolRatings struct {
 	UpdatedAt time.Time `json:"updatedAt"`
 }
 
-type SchoolRatingsService interface {
-	GetSchoolRatings(ctx context.Context, id int) (*[]SchoolRatings, error)
-	CreateSchoolRatings(ctx context.Context, schoolRatings *SchoolRatings) error
+type SchoolRatingService interface {
+	GetSchoolRatings(ctx context.Context, id int) (*[]SchoolRating, error)
+	CreateSchoolRating(ctx context.Context, schoolRatings *SchoolRating) error
 	ApproveSchoolRating(ctx context.Context, id int) error
-	UpdateSchoolRatings(ctx context.Context, id int, upd *SchoolRatingsUpdate) (*SchoolRatings, error)
-	DeleteSchoolRatings(ctx context.Context, id int) error
+	UpdateSchoolRating(ctx context.Context, id int, upd *SchoolRatingUpdate) (*SchoolRatingUpdate, error)
+	DeleteSchoolRating(ctx context.Context, id int) error
 }
 
-type SchoolRatingsUpdate struct {
+type SchoolRatingUpdate struct {
 	Rating  *int    `json:"rating"`
 	Comment *string `json:"comment"`
 }
