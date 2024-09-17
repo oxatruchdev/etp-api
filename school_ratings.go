@@ -1,6 +1,9 @@
 package etpapi
 
-import "time"
+import (
+	"context"
+	"time"
+)
 
 type SchoolRatings struct {
 	ID int `json:"id"`
@@ -13,9 +16,22 @@ type SchoolRatings struct {
 	School   *School `json:"school"`
 	SchoolID int     `json:"schoolId"`
 
-	IsReviewed bool `json:"isReviewed"`
+	IsApproved bool `json:"isApproved"`
 
 	// CreatedAt and UpdatedAt are used for tracking
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
+}
+
+type SchoolRatingsService interface {
+	GetSchoolRatings(ctx context.Context, id int) (*[]SchoolRatings, error)
+	CreateSchoolRatings(ctx context.Context, schoolRatings *SchoolRatings) error
+	ApproveSchoolRating(ctx context.Context, id int) error
+	UpdateSchoolRatings(ctx context.Context, id int, upd *SchoolRatingsUpdate) (*SchoolRatings, error)
+	DeleteSchoolRatings(ctx context.Context, id int) error
+}
+
+type SchoolRatingsUpdate struct {
+	Rating  *int    `json:"rating"`
+	Comment *string `json:"comment"`
 }

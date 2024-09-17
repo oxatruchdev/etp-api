@@ -37,6 +37,7 @@ type SchoolFilter struct {
 type SchoolService interface {
 	GetSchoolById(ctx context.Context, id int) (*School, error)
 	GetSchools(ctx context.Context, filter SchoolFilter) (*[]School, int, error)
+	GetSchoolRatings(ctx context.Context, id int) (*[]SchoolRatings, error)
 	CreateSchool(ctx context.Context, school *School) error
 	UpdateSchool(ctx context.Context, id int, upd *SchoolUpdate) (*School, error)
 	DeleteSchool(ctx context.Context, id int) error

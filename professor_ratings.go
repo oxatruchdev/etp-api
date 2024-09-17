@@ -1,8 +1,11 @@
 package etpapi
 
-import "time"
+import (
+	"context"
+	"time"
+)
 
-type ProfessorRatings struct {
+type ProfessorRating struct {
 	ID int `json:"id"`
 
 	// Data related to the review itself
@@ -11,6 +14,9 @@ type ProfessorRatings struct {
 	MandatoryAttendance bool   `json:"mandatoryAttendance"`
 	Grade               string `json:"grade"`
 	TextbookRequired    bool   `json:"textbookRequired"`
+
+	IsApproved     bool `json:"isApproved"`
+	ApprovalsCount int  `json:"approvalsCount"`
 
 	// Relations
 	Course   Course `json:"course"`
@@ -22,4 +28,27 @@ type ProfessorRatings struct {
 	// CreatedAt and UpdatedAt are used for tracking
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
+}
+
+type ProfessorRatingsService interface {
+	// Creates a new professor rating
+	CreateProfessorRatings(ctx context.Context, professorRatings *ProfessorRating) error
+
+	// Approves a professor rating
+	// It is necessary to have at least 3 approvals in order to be approved
+	ApproveProfessorRating(ctx context.Context, id int) error
+
+	// Deletes a professor rating
+	DeleteProfessorRatings(ctx context.Context, id int) error
+
+	// Updates a professor rating
+	// The rating will be put in a pending state until approved
+	UpdateProfessorRatings(ctx context.Context, id int, upd *ProfessorRatingUpdate) (*ProfessorRating, error)
+}
+
+type ProfessorRatingUpdate struct {
+	WouldTakeAgain      *bool   `json:"wouldTakeAgain"`
+	MandatoryAttendance *bool   `json:"mandatoryAttendance"`
+	Grade               *string `json:"grade"`
+	TextbookRequired    *bool   `json:"textbookRequired"`
 }
