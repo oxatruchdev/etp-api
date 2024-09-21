@@ -1,4 +1,4 @@
-package etpapi
+package etp
 
 import (
 	"context"
