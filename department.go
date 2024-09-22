@@ -15,8 +15,8 @@ type Department struct {
 	// Relations
 	School     *School      `json:"school"`
 	SchoolID   int          `json:"schoolId"`
-	Professors *[]Professor `json:"professors"`
-	Courses    *[]Course    `json:"courses"`
+	Professors []*Professor `json:"professors"`
+	Courses    []*Course    `json:"courses"`
 
 	// CreatedAt and UpdatedAt are used for tracking
 	CreatedAt time.Time `json:"createdAt"`
@@ -37,7 +37,7 @@ type DepartmentService interface {
 
 	// Gets all departments
 	// Offset and Limit are used for pagination
-	GetDepartments(ctx context.Context, filter DepartmentFilter) (*[]Department, int, error)
+	GetDepartments(ctx context.Context, filter DepartmentFilter) ([]*Department, int, error)
 
 	// Creates a department
 	CreateDepartment(ctx context.Context, department *Department) error

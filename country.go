@@ -15,7 +15,7 @@ type Country struct {
 	AdditionalFields any    `json:"additionalFields"`
 
 	// Relations
-	Schools *[]School `json:"schools"`
+	Schools []*School `json:"schools"`
 
 	// CreatedAt and UpdatedAt are used for tracking
 	CreatedAt time.Time `json:"createdAt"`
@@ -25,7 +25,7 @@ type Country struct {
 type CountryService interface {
 	GetCountryById(ctx context.Context, id int) (*Country, error)
 
-	GetCountries(ctx context.Context) (*[]Country, error)
+	GetCountries(ctx context.Context) ([]*Country, error)
 
 	CreateCountry(ctx context.Context, country *Country) error
 

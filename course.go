@@ -15,7 +15,7 @@ type Course struct {
 	// Relations
 	Department   *Department  `json:"department"`
 	DepartmentID int          `json:"departmentId"`
-	Professors   *[]Professor `json:"professors"`
+	Professors   []*Professor `json:"professors"`
 
 	// CreatedAt and UpdatedAt are used for tracking
 	CreatedAt time.Time `json:"createdAt"`

@@ -40,10 +40,10 @@ type SchoolService interface {
 
 	// Gets all schools
 	// Offset and Limit are used for pagination
-	GetSchools(ctx context.Context, filter SchoolFilter) (*[]School, int, error)
+	GetSchools(ctx context.Context, filter SchoolFilter) ([]*School, int, error)
 
 	// Gets the school ratings for a school
-	GetSchoolRatings(ctx context.Context, id int) (*[]SchoolRating, error)
+	GetSchoolRatings(ctx context.Context, id int) ([]*SchoolRating, error)
 
 	// Creates a school
 	CreateSchool(ctx context.Context, school *School) error

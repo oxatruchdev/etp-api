@@ -16,9 +16,9 @@ type Professor struct {
 	SchoolId int     `json:"schoolId"`
 
 	// Relations
-	Ratings     *[]ProfessorRating `json:"ratings"`
-	Departments *[]Department      `json:"department"`
-	Courses     *[]Course          `json:"courses"`
+	Ratings     []*ProfessorRating `json:"ratings"`
+	Departments []*Department      `json:"department"`
+	Courses     []*Course          `json:"courses"`
 
 	// CreatedAt and UpdatedAt are used for tracking
 	CreatedAt time.Time `json:"createdAt"`
@@ -38,7 +38,7 @@ type ProfessorService interface {
 
 	// Gets all professors
 	// Offset and Limit are used for pagination
-	GetProfessors(ctx context.Context, filter ProfessorFilter) (*[]Professor, int, error)
+	GetProfessors(ctx context.Context, filter ProfessorFilter) ([]*Professor, int, error)
 
 	// Creates a professor
 	CreateProfessor(ctx context.Context, professor *Professor) error

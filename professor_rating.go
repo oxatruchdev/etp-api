@@ -47,7 +47,7 @@ type ProfessorRatingService interface {
 
 	// Get all professor ratings
 	// Can be filter by the course and/or the professor
-	GetProfessorRatings(ctx context.Context, filter ProfessorFilter) (*[]ProfessorRating, error)
+	GetProfessorRatings(ctx context.Context, filter ProfessorFilter) ([]*ProfessorRating, error)
 
 	// Deletes a professor rating
 	DeleteProfessorRating(ctx context.Context, id int) error
