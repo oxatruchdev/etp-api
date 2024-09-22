@@ -19,8 +19,8 @@ type Department struct {
 	Courses    []*Course    `json:"courses"`
 
 	// CreatedAt and UpdatedAt are used for tracking
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
+	CreatedAt time.Time `json:"createdAt" db:"created_at"`
+	UpdatedAt time.Time `json:"updatedAt" db:"updated_at"`
 }
 
 type DepartmentFilter struct {

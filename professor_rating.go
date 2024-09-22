@@ -9,13 +9,13 @@ type ProfessorRating struct {
 	ID int `json:"id"`
 
 	// Data related to the review itself
-	WouldTakeAgain      bool   `json:"wouldTakeAgain"`
-	MandatoryAttendance bool   `json:"mandatoryAttendance"`
+	WouldTakeAgain      bool   `json:"wouldTakeAgain" db:"would_take_again"`
+	MandatoryAttendance bool   `json:"mandatoryAttendance" db:"mandatory_attendance"`
 	Grade               string `json:"grade"`
-	TextbookRequired    bool   `json:"textbookRequired"`
+	TextbookRequired    bool   `json:"textbookRequired" db:"textbook_required"`
 
-	IsApproved     bool `json:"isApproved"`
-	ApprovalsCount int  `json:"approvalsCount"`
+	IsApproved     bool `json:"isApproved" db:"is_approved"`
+	ApprovalsCount int  `json:"approvalsCount" db:"approvals_count"`
 
 	// Relations
 	Course   Course `json:"course"`
@@ -25,8 +25,8 @@ type ProfessorRating struct {
 	ProfessorId int       `json:"professorId"`
 
 	// CreatedAt and UpdatedAt are used for tracking
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
+	CreatedAt time.Time `json:"createdAt" db:"created_at"`
+	UpdatedAt time.Time `json:"updatedAt" db:"updated_at"`
 }
 
 type ProfessorRatingFilter struct {
