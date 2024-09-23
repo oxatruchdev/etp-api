@@ -118,16 +118,7 @@ func deleteSchoolRating(ctx context.Context, tx *Tx, id int) error {
 // the school rating's rating and comment accordingly.
 func updateSchoolRating(ctx context.Context, tx *Tx, id int, upd *etp.SchoolRatingUpdate) (*etp.SchoolRating, error) {
 	// Retrieve school ratings by ID from the database.
-	schoolRatings, _, err := getSchoolRatings(ctx, tx, &etp.SchoolRatingFilter{RatingID: &id})
-	if err != nil {
-		return nil, err
-	}
-
-	// Check if a matching school rating was found.
-	if len(schoolRatings) == 0 {
-		return nil, &etp.Error{Code: etp.ENOTFOUND, Message: "school ratings not found"}
-	}
-	schoolRating := schoolRatings[0]
+	schoolRating, err := getSchoolRatingById(ctx, tx, id)
 
 	// We have to reset the review state of approved, also we're going to check if the user has updated this review before
 	// If the updated count is greater than 2, we won't allow the user to update the review
@@ -140,12 +131,12 @@ func updateSchoolRating(ctx context.Context, tx *Tx, id int, upd *etp.SchoolRati
 	schoolRating.UpdatedCount++
 
 	// Update the school rating.
-	if upd.Rating != nil {
-		schoolRating.Rating = *upd.Rating
+	if v := upd.Rating; v != nil {
+		schoolRating.Rating = *v
 	}
 
-	if upd.Comment != nil {
-		schoolRating.Comment = *upd.Comment
+	if v := upd.Comment; v != nil {
+		schoolRating.Comment = *v
 	}
 
 	query := `
@@ -181,25 +172,20 @@ func updateSchoolRating(ctx context.Context, tx *Tx, id int, upd *etp.SchoolRati
 
 func approveSchoolRating(ctx context.Context, tx *Tx, id int) error {
 	// Retrieve school rating by ID from the database.
-	schoolRating, _, err := getSchoolRatings(ctx, tx, &etp.SchoolRatingFilter{RatingID: &id})
+	schoolRating, err := getSchoolRatingById(ctx, tx, id)
 	if err != nil {
 		return err
 	}
 
-	// Check if a matching school rating was found.
-	if len(schoolRating) == 0 {
-		return &etp.Error{Code: etp.ENOTFOUND, Message: "school rating not found"}
-	}
-
 	// Verify that the school rating has not been already approved.
-	if schoolRating[0].IsApproved || schoolRating[0].ApprovalCount >= 3 {
+	if schoolRating.IsApproved || schoolRating.ApprovalCount >= 3 {
 		return &etp.Error{Code: etp.ECONFLICT, Message: "school rating is already approved"}
 	}
 
 	// Increment the approval count and update the 'is_approved' flag accordingly.
-	schoolRating[0].ApprovalCount++
-	if schoolRating[0].ApprovalCount == 3 {
-		schoolRating[0].IsApproved = true
+	schoolRating.ApprovalCount++
+	if schoolRating.ApprovalCount == 3 {
+		schoolRating.IsApproved = true
 	}
 
 	// Construct a named query for updating the school rating in the database.
@@ -216,8 +202,8 @@ func approveSchoolRating(ctx context.Context, tx *Tx, id int) error {
 
 	// Prepare the arguments for the named query.
 	args := pgx.NamedArgs{
-		"approvalCount": schoolRating[0].ApprovalCount,
-		"isApproved":    schoolRating[0].IsApproved,
+		"approvalCount": schoolRating.ApprovalCount,
+		"isApproved":    schoolRating.IsApproved,
 		"id":            id,
 	}
 
@@ -228,6 +214,19 @@ func approveSchoolRating(ctx context.Context, tx *Tx, id int) error {
 	}
 
 	return nil
+}
+
+func getSchoolRatingById(ctx context.Context, tx *Tx, id int) (*etp.SchoolRating, error) {
+	schoolRatings, n, err := getSchoolRatings(ctx, tx, &etp.SchoolRatingFilter{RatingID: &id})
+	if err != nil {
+		return nil, err
+	}
+
+	if n == 0 {
+		return nil, &etp.Error{Code: etp.ENOTFOUND, Message: "school rating not found"}
+	}
+
+	return schoolRatings[0], nil
 }
 
 func getSchoolRatings(ctx context.Context, tx *Tx, filter *etp.SchoolRatingFilter) ([]*etp.SchoolRating, int, error) {

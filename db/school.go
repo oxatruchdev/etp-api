@@ -63,18 +63,12 @@ func (ss *SchoolService) GetSchoolById(ctx context.Context, id int) (*etp.School
 	}
 	defer tx.Rollback(ctx)
 
-	schools, _, err := getSchools(ctx, tx, etp.SchoolFilter{
-		SchoolId: &id,
-	})
+	school, err := getSchoolById(ctx, tx, id)
 	if err != nil {
 		return nil, err
 	}
 
-	if len(schools) == 0 {
-		return nil, &etp.Error{Code: etp.ENOTFOUND, Message: "school not found"}
-	}
-
-	return schools[0], nil
+	return school, nil
 }
 
 func (ss *SchoolService) GetSchools(ctx context.Context, filter etp.SchoolFilter) ([]*etp.School, int, error) {
@@ -90,6 +84,98 @@ func (ss *SchoolService) GetSchools(ctx context.Context, filter etp.SchoolFilter
 	}
 
 	return schools, n, tx.Commit(ctx)
+}
+
+func (ss *SchoolService) UpdateSchool(ctx context.Context, id int, upd *etp.SchoolUpdate) (*etp.School, error) {
+	tx, err := ss.db.BeginTx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback(ctx)
+
+	school, err := updateSchool(ctx, tx, id, upd)
+	if err != nil {
+		return nil, err
+	}
+
+	return school, tx.Commit(ctx)
+}
+
+func (ss *SchoolService) DeleteSchool(ctx context.Context, id int) error {
+	tx, err := ss.db.BeginTx(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+
+	err = deleteSchool(ctx, tx, id)
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit(ctx)
+}
+
+func deleteSchool(ctx context.Context, tx *Tx, id int) error {
+	_, err := tx.Exec(ctx, "delete from school where id = @id", pgx.NamedArgs{"id": id})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func updateSchool(ctx context.Context, tx *Tx, id int, upd *etp.SchoolUpdate) (*etp.School, error) {
+	school, err := getSchoolById(ctx, tx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	if v := upd.Name; v != nil {
+		school.Name = *v
+	}
+
+	if v := upd.Abbreviation; v != nil {
+		school.Abbreviation = *v
+	}
+
+	query := `
+		update 
+			school
+		set
+			name = @name,
+			abbreviation = @abbreviation
+			updated_at = now()
+		where
+			id = @id
+	`
+
+	args := pgx.NamedArgs{
+		"id":           id,
+		"name":         school.Name,
+		"abbreviation": school.Abbreviation,
+	}
+
+	_, err = tx.Exec(ctx, query, args)
+	if err != nil {
+		return nil, err
+	}
+
+	return school, nil
+}
+
+func getSchoolById(ctx context.Context, tx *Tx, id int) (*etp.School, error) {
+	schools, n, err := getSchools(ctx, tx, etp.SchoolFilter{
+		SchoolId: &id,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if n == 0 {
+		return nil, &etp.Error{Code: etp.ENOTFOUND, Message: "school not found"}
+	}
+
+	return schools[0], nil
 }
 
 func getSchools(ctx context.Context, tx *Tx, filter etp.SchoolFilter) ([]*etp.School, int, error) {
