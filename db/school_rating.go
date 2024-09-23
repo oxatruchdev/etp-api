@@ -258,10 +258,10 @@ func getSchoolRatings(ctx context.Context, tx *Tx, filter *etp.SchoolRatingFilte
 			created_at,
 			updated_at,
 			count(*) over()
-		from school_rating
-	` + strings.Join(where, " and ") + `
-	` + FormatLimitOffset(filter.Offset, filter.Limit) +
-		`;`
+		from 
+			school_rating
+		where ` + strings.Join(where, " and ") + `
+		` + FormatLimitOffset(filter.Offset, filter.Limit)
 
 	rows, err := tx.Query(ctx, query, args)
 	if err != nil {

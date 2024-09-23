@@ -117,10 +117,8 @@ func getSchools(ctx context.Context, tx *Tx, filter etp.SchoolFilter) ([]*etp.Sc
 			count(*) over()
 		from
 			school
-		where
-			` + strings.Join(where, " and ") + `
-		` + FormatLimitOffset(filter.Offset, filter.Limit) +
-		`;`
+		where ` + strings.Join(where, " and ") + `
+		` + FormatLimitOffset(filter.Offset, filter.Limit)
 
 	rows, err := tx.Query(ctx, query, args)
 	if err != nil {
