@@ -80,25 +80,9 @@ func (cs *CountryService) GetCountries(ctx context.Context) ([]*etp.Country, err
 	}
 	defer rows.Close()
 
-	countries := make([]*etp.Country, 0)
-	for rows.Next() {
-		var country *etp.Country
-
-		if err := rows.Scan(
-			&country.ID,
-			&country.Name,
-			&country.Abbreviation,
-			&country.AdditionalFields,
-			&country.CreatedAt,
-			&country.UpdatedAt,
-		); err != nil {
-			return nil, err
-		}
-
-		if err := rows.Err(); err != nil {
-			return nil, err
-		}
-		countries = append(countries, country)
+	countries, err := pgx.CollectRows(rows, pgx.RowToStructByName[*etp.Country])
+	if err != nil {
+		return nil, err
 	}
 
 	return countries, tx.Commit(ctx)
