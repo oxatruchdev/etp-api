@@ -40,7 +40,7 @@ type SchoolRatingService interface {
 	GetSchoolRatings(ctx context.Context, filter SchoolRatingFilter) ([]*SchoolRating, int, error)
 
 	ApproveSchoolRating(ctx context.Context, id int) error
-	UpdateSchoolRating(ctx context.Context, id int, upd *SchoolRatingUpdate) (*SchoolRatingUpdate, error)
+	UpdateSchoolRating(ctx context.Context, id int, upd *SchoolRatingUpdate) (*SchoolRating, error)
 	DeleteSchoolRating(ctx context.Context, id int) error
 }
 

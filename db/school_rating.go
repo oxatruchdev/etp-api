@@ -34,14 +34,14 @@ func (srs *SchoolRatingService) CreateSchoolRating(ctx context.Context, schoolRa
 	return tx.Commit(ctx)
 }
 
-func (srs *SchoolRatingService) GetSchoolRatings(ctx context.Context, filter *etp.SchoolRatingFilter) ([]*etp.SchoolRating, int, error) {
+func (srs *SchoolRatingService) GetSchoolRatings(ctx context.Context, filter etp.SchoolRatingFilter) ([]*etp.SchoolRating, int, error) {
 	tx, err := srs.db.BeginTx(ctx)
 	if err != nil {
 		return nil, 0, err
 	}
 	defer tx.Rollback(ctx)
 
-	ratings, n, err := getSchoolRatings(ctx, tx, filter)
+	ratings, n, err := getSchoolRatings(ctx, tx, &filter)
 	if err != nil {
 		return nil, 0, err
 	}
