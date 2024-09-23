@@ -112,15 +112,13 @@ func (cs *CountryService) GetCountryById(ctx context.Context, id int) (*etp.Coun
 		"id": id,
 	}
 
-	var country *etp.Country
-	if err := tx.QueryRow(ctx, query, args).Scan(
-		&country.ID,
-		&country.Name,
-		&country.Abbreviation,
-		&country.AdditionalFields,
-		&country.CreatedAt,
-		&country.UpdatedAt,
-	); err != nil {
+	rows, err := tx.Query(ctx, query, args)
+	if err != nil {
+		return nil, err
+	}
+
+	country, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[*etp.Country])
+	if err != nil {
 		return nil, err
 	}
 
