@@ -137,6 +137,7 @@ func updateSchoolRating(ctx context.Context, tx *Tx, id int, upd *etp.SchoolRati
 
 	schoolRating.ApprovalCount = 0
 	schoolRating.IsApproved = false
+	schoolRating.UpdatedCount++
 
 	// Update the school rating.
 	if upd.Rating != nil {
@@ -154,7 +155,9 @@ func updateSchoolRating(ctx context.Context, tx *Tx, id int, upd *etp.SchoolRati
 			approval_count = @approvalCount,
 			is_approved = @isApproved,
 			rating = @rating,
-			comment = @comment
+			comment = @comment,
+			updated_count = @updatedCount,
+			updated_at = now(),
 		where 
 			id = @id
 	`
@@ -165,6 +168,7 @@ func updateSchoolRating(ctx context.Context, tx *Tx, id int, upd *etp.SchoolRati
 		"isApproved":    schoolRating.IsApproved,
 		"rating":        schoolRating.Rating,
 		"comment":       schoolRating.Comment,
+		"updatedCount":  schoolRating.UpdatedCount,
 	}
 
 	_, err = tx.Exec(ctx, query, args)
@@ -204,7 +208,8 @@ func approveSchoolRating(ctx context.Context, tx *Tx, id int) error {
 			school_rating
 		set
 			approval_count = @approvalCount,
-			is_approved = @isApproved
+			is_approved = @isApproved,
+			updated_at = now()
 		where
 			id = @id
 	`
