@@ -14,7 +14,9 @@ type Course struct {
 
 	// Relations
 	Department   *Department  `json:"department"`
-	DepartmentID int          `json:"departmentId"`
+	DepartmentID int          `json:"departmentId" db:"department_id"`
+	School       *School      `json:"school"`
+	SchoolID     int          `json:"schoolId" db:"department_id"`
 	Professors   []*Professor `json:"professors"`
 
 	// CreatedAt and UpdatedAt are used for tracking
@@ -23,8 +25,9 @@ type Course struct {
 }
 
 type CourseFilter struct {
-	ID        *int `json:"id"`
-	CountryID *int `json:"countryId"`
+	ID           *int `json:"id"`
+	DepartmentId *int `json:"departmentId"`
+	SchoolID     *int `json:"schoolID"`
 
 	Offset int `json:"offset"`
 	Limit  int `json:"limit"`
@@ -33,7 +36,7 @@ type CourseFilter struct {
 type CourseService interface {
 	GetCourseById(ctx context.Context, id int) (*Course, error)
 
-	GetCourses(ctx context.Context, filter CourseFilter) (*[]Course, int, error)
+	GetCourses(ctx context.Context, filter CourseFilter) ([]*Course, int, error)
 
 	CreateCourse(ctx context.Context, course *Course) error
 
