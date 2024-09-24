@@ -50,7 +50,7 @@ func (cs *CountryService) CreateCountry(ctx context.Context, id int, country *et
 
 	_, err = tx.Exec(ctx, query, args)
 	if err != nil {
-		slog.Error("error while creating country", country)
+		slog.Error("error while creating country", "country", country, "error", err)
 	}
 
 	return tx.Commit(ctx)

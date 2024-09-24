@@ -49,7 +49,7 @@ func (ss *SchoolService) CreateSchool(ctx context.Context, school *etp.School) e
 
 	_, err = tx.Exec(ctx, query, args)
 	if err != nil {
-		slog.Error("error while creating school", school, err)
+		slog.Error("error while creating school", "school", school, "error", err)
 		return err
 	}
 

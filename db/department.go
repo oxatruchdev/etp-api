@@ -214,7 +214,7 @@ func createDepartment(ctx context.Context, tx *Tx, department *etp.Department) e
 
 	_, err := tx.Exec(ctx, query, args)
 	if err != nil {
-		slog.Error("error while creating department", department, err)
+		slog.Error("error while creating department", "department", department, "error", err)
 		return err
 	}
 

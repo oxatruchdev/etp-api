@@ -328,7 +328,7 @@ func createSchoolRating(ctx context.Context, tx *Tx, schoolRating *etp.SchoolRat
 
 	_, err := tx.Exec(ctx, query, args)
 	if err != nil {
-		slog.Error("error while creating school rating", schoolRating, err)
+		slog.Error("error while creating school rating", "schoolRating", schoolRating, "error", err)
 		return err
 	}
 	return nil
