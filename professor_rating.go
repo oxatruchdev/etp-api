@@ -16,11 +16,11 @@ type ProfessorRating struct {
 
 	IsApproved     bool `json:"isApproved" db:"is_approved"`
 	ApprovalsCount int  `json:"approvalsCount" db:"approvals_count"`
+	UpdatedCount   int  `json:"updateCount" db:"updated_count"`
 
 	// Relations
-	Course   Course `json:"course"`
-	CourseId int    `json:"courseId"`
-
+	Course      Course    `json:"course"`
+	CourseId    int       `json:"courseId"`
 	Professor   Professor `json:"professor"`
 	ProfessorId int       `json:"professorId"`
 
@@ -46,8 +46,8 @@ type ProfessorRatingService interface {
 	ApproveProfessorRating(ctx context.Context, id int) error
 
 	// Get all professor ratings
-	// Can be filter by the course and/or the professor
-	GetProfessorRatings(ctx context.Context, filter ProfessorFilter) ([]*ProfessorRating, error)
+	// Can be filtered by the course and/or the professor
+	GetProfessorRatings(ctx context.Context, filter ProfessorRatingFilter) ([]*ProfessorRating, int, error)
 
 	// Deletes a professor rating
 	DeleteProfessorRating(ctx context.Context, id int) error
