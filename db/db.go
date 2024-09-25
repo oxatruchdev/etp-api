@@ -12,7 +12,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-//go:embed migration/*.sql
+//go:embed migrations/*.sql
 var migrationFS embed.FS
 
 type DB struct {
