@@ -11,6 +11,7 @@ type School struct {
 	// Name and abbreviation are used for display
 	Name         string `json:"name"`
 	Abbreviation string `json:"abbreviation"`
+	Metadata     any    `json:"metadata" db:"metadata"`
 
 	// Country school belongs to
 	Country   *Country `json:"country"`
@@ -55,4 +56,5 @@ type SchoolService interface {
 type SchoolUpdate struct {
 	Name         *string `json:"name"`
 	Abbreviation *string `json:"abbreviation"`
+	Metadata     any     `json:"metadata"`
 }

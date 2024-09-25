@@ -138,12 +138,17 @@ func updateSchool(ctx context.Context, tx *Tx, id int, upd *etp.SchoolUpdate) (*
 		school.Abbreviation = *v
 	}
 
+	if v := upd.Metadata; v != nil {
+		school.Metadata = v
+	}
+
 	query := `
 		update 
 			school
 		set
 			name = @name,
 			abbreviation = @abbreviation
+			metadata = @metadata
 			updated_at = now()
 		where
 			id = @id
@@ -153,6 +158,7 @@ func updateSchool(ctx context.Context, tx *Tx, id int, upd *etp.SchoolUpdate) (*
 		"id":           id,
 		"name":         school.Name,
 		"abbreviation": school.Abbreviation,
+		"metadata":     school.Metadata,
 	}
 
 	_, err = tx.Exec(ctx, query, args)

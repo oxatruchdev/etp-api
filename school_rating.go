@@ -9,16 +9,15 @@ type SchoolRating struct {
 	ID int `json:"id"`
 
 	// Data related to the rating
-	Rating  int    `json:"rating"`
-	Comment string `json:"comment"`
+	Rating        int    `json:"rating"`
+	Comment       string `json:"comment"`
+	IsApproved    bool   `json:"isApproved" db:"is_approved"`
+	ApprovalCount int    `json:"approvalCount" db:"approval_count"`
+	UpdatedCount  int    `json:"updateCount" db:"updated_count"`
 
 	// Data related to the school
 	School   *School `json:"school"`
 	SchoolID int     `json:"schoolId"`
-
-	IsApproved    bool `json:"isApproved" db:"is_approved"`
-	ApprovalCount int  `json:"approvalCount" db:"approval_count"`
-	UpdatedCount  int  `json:"updateCount" db:"updated_count"`
 
 	// CreatedAt and UpdatedAt are used for tracking
 	CreatedAt time.Time `json:"createdAt" db:"created_at"`
