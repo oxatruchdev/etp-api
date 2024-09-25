@@ -137,9 +137,19 @@ func updateProfessorRating(ctx context.Context, tx *Tx, id int, upd *etp.Profess
 		professorRating.TextbookRequired = *v
 	}
 
+	if v := upd.Rating; v != nil {
+		professorRating.Rating = *v
+	}
+
+	if v := upd.Comment; v != nil {
+		professorRating.Comment = *v
+	}
+
 	query := `
 		UPDATE professor_rating
 		SET
+			rating = @rating,
+			comment = @comment,
 			would_take_again = @wouldTakeAgain,
 			mandatory_attendance = @mandatoryAttendance,
 			grade = @grade,
@@ -151,6 +161,8 @@ func updateProfessorRating(ctx context.Context, tx *Tx, id int, upd *etp.Profess
 
 	args := pgx.NamedArgs{
 		"id":                  id,
+		"rating":              professorRating.Rating,
+		"comment":             professorRating.Comment,
 		"wouldTakeAgain":      professorRating.WouldTakeAgain,
 		"mandatoryAttendance": professorRating.MandatoryAttendance,
 		"grade":               professorRating.Grade,
@@ -257,18 +269,23 @@ func getProfessorRatings(ctx context.Context, tx *Tx, filter *etp.ProfessorRatin
 	}
 
 	professorRatings, err := pgx.CollectRows(rows, pgx.RowToStructByName[*etp.ProfessorRating])
+	if err != nil {
+		return nil, 0, err
+	}
 
 	return professorRatings, n, nil
 }
 
 func createProfessorRating(ctx context.Context, tx *Tx, professorRating *etp.ProfessorRating) error {
 	query := `
-		INSERT INTO professor_rating (would_take_again, mandatory_attendance, grade, textbook_required, 
+		INSERT INTO professor_rating (rating, comment, would_take_again, mandatory_attendance, grade, textbook_required, 
 			is_approved, approvals_count, created_at, updated_at, professor_id, course_id)
-		VALUES (@wouldTakeAgain, @mandatoryAttendance, @grade, @textbookRequired, @isApproved, @approvalsCount, NOW(), NOW(), @professorId, @courseId)
+		VALUES (@rating, @comment, @wouldTakeAgain, @mandatoryAttendance, @grade, @textbookRequired, @isApproved, @approvalsCount, NOW(), NOW(), @professorId, @courseId)
 	`
 
 	args := pgx.NamedArgs{
+		"rating":              professorRating.Rating,
+		"comment":             professorRating.Comment,
 		"wouldTakeAgain":      professorRating.WouldTakeAgain,
 		"mandatoryAttendance": professorRating.MandatoryAttendance,
 		"grade":               professorRating.Grade,

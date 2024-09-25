@@ -9,6 +9,8 @@ type ProfessorRating struct {
 	ID int `json:"id"`
 
 	// Data related to the review itself
+	Rating              int    `json:"rating"`
+	Comment             string `json:"comment"`
 	WouldTakeAgain      bool   `json:"wouldTakeAgain" db:"would_take_again"`
 	MandatoryAttendance bool   `json:"mandatoryAttendance" db:"mandatory_attendance"`
 	Grade               string `json:"grade"`
@@ -58,6 +60,8 @@ type ProfessorRatingService interface {
 }
 
 type ProfessorRatingUpdate struct {
+	Rating              *int    `json:"rating"`
+	Comment             *string `json:"comment"`
 	WouldTakeAgain      *bool   `json:"wouldTakeAgain"`
 	MandatoryAttendance *bool   `json:"mandatoryAttendance"`
 	Grade               *string `json:"grade"`
