@@ -2,6 +2,7 @@ package http
 
 import (
 	"fmt"
+	"log/slog"
 
 	"github.com/Evalua-Tu-Profe/etp-api"
 	"github.com/labstack/echo/v4"
@@ -27,8 +28,10 @@ func NewServer() *Server {
 		Echo: e,
 	}
 
+	slog.Info("Registering routes")
 	{
 		s.registerCountryRoutes()
+		s.registerDepartmentRoutes()
 	}
 
 	return s

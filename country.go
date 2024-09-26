@@ -22,10 +22,17 @@ type Country struct {
 	UpdatedAt time.Time `json:"updatedAt" db:"updated_at"`
 }
 
+type CountryFilter struct {
+	CountryId *int `json:"id"`
+
+	Offset int `json:"offset"`
+	Limit  int `json:"limit"`
+}
+
 type CountryService interface {
 	GetCountryById(ctx context.Context, id int) (*Country, error)
 
-	GetCountries(ctx context.Context) ([]*Country, error)
+	GetCountries(ctx context.Context, filter CountryFilter) ([]*Country, int, error)
 
 	CreateCountry(ctx context.Context, country *Country) error
 

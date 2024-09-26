@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"log/slog"
+	"strings"
 	"time"
 
 	etp "github.com/Evalua-Tu-Profe/etp-api"
@@ -56,36 +57,23 @@ func (cs *CountryService) CreateCountry(ctx context.Context, country *etp.Countr
 	return tx.Commit(ctx)
 }
 
-func (cs *CountryService) GetCountries(ctx context.Context) ([]*etp.Country, error) {
+func (cs *CountryService) GetCountries(ctx context.Context, filter etp.CountryFilter) ([]*etp.Country, int, error) {
 	tx, err := cs.db.BeginTx(ctx)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	defer tx.Rollback(ctx)
 
-	query := `
-		select 
-			id, 
-			name, 
-			abbreviation, 
-			additional_fields, 
-			created_at, 
-			updated_at 
-		from country
-	`
-
-	rows, err := tx.Query(ctx, query)
+	countries, n, err := getCountries(ctx, tx, filter)
 	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	countries, err := pgx.CollectRows(rows, pgx.RowToStructByName[*etp.Country])
-	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
-	return countries, tx.Commit(ctx)
+	if n == 0 {
+		return []*etp.Country{}, 0, nil
+	}
+
+	return countries, n, tx.Commit(ctx)
 }
 
 func (cs *CountryService) GetCountryById(ctx context.Context, id int) (*etp.Country, error) {
@@ -162,4 +150,48 @@ func (cs *CountryService) UpdateCountry(ctx context.Context, id int, upd *etp.Co
 	}
 
 	return country, tx.Commit(ctx)
+}
+
+func getCountries(ctx context.Context, tx *Tx, filter etp.CountryFilter) ([]*etp.Country, int, error) {
+	where, args := []string{"1 = 1"}, pgx.NamedArgs{}
+
+	if v := filter.CountryId; v != nil {
+		where = append(where, "id = @id")
+		args["id"] = *v
+	}
+
+	countQuery := `
+		select 
+			count(*) 
+		from country
+	` + strings.Join(where, " and ")
+
+	var n int
+	err := tx.QueryRow(ctx, countQuery).Scan(&n)
+	if err != nil {
+		return []*etp.Country{}, 0, err
+	}
+
+	query := `
+		select 
+			id, 
+			name, 
+			abbreviation, 
+			additional_fields, 
+			created_at, 
+			updated_at 
+		from country
+	` + strings.Join(where, " and ") + `
+	` + FormatLimitOffset(filter.Offset, filter.Limit)
+
+	rows, err := tx.Query(ctx, query)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	countries, err := pgx.CollectRows(rows, pgx.RowToStructByName[*etp.Country])
+	if err != nil {
+		return nil, 0, err
+	}
+	return countries, n, nil
 }

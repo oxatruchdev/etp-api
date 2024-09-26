@@ -53,6 +53,7 @@ func (ds *DepartmentService) GetDepartmentById(ctx context.Context, id int) (*et
 }
 
 func (ds *DepartmentService) GetDepartments(ctx context.Context, filter etp.DepartmentFilter) ([]*etp.Department, int, error) {
+	slog.Debug("GetDepartments", "filter", filter)
 	tx, err := ds.db.BeginTx(ctx)
 	if err != nil {
 		return nil, 0, err
@@ -65,7 +66,7 @@ func (ds *DepartmentService) GetDepartments(ctx context.Context, filter etp.Depa
 	}
 
 	if n == 0 {
-		return nil, 0, nil
+		return []*etp.Department{}, 0, nil
 	}
 
 	return departments, n, tx.Commit(ctx)
