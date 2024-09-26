@@ -153,7 +153,7 @@ func (cs *CountryService) UpdateCountry(ctx context.Context, id int, upd *etp.Co
 }
 
 func getCountries(ctx context.Context, tx *Tx, filter etp.CountryFilter) ([]*etp.Country, int, error) {
-	where, args := []string{"1 = 1"}, pgx.NamedArgs{}
+	where, args := []string{"1=1"}, pgx.NamedArgs{}
 
 	if v := filter.CountryId; v != nil {
 		where = append(where, "id = @id")
@@ -164,34 +164,44 @@ func getCountries(ctx context.Context, tx *Tx, filter etp.CountryFilter) ([]*etp
 		select 
 			count(*) 
 		from country
-	` + strings.Join(where, " and ")
+		where ` + strings.Join(where, " and ")
+
+	slog.Info("Countries count query", "query", countQuery, "args", args)
 
 	var n int
-	err := tx.QueryRow(ctx, countQuery).Scan(&n)
+	err := tx.QueryRow(ctx, countQuery, args).Scan(&n)
 	if err != nil {
 		return []*etp.Country{}, 0, err
 	}
 
 	query := `
 		select 
-			id, 
-			name, 
-			abbreviation, 
-			additional_fields, 
-			created_at, 
-			updated_at 
-		from country
-	` + strings.Join(where, " and ") + `
-	` + FormatLimitOffset(filter.Offset, filter.Limit)
+			id,
+			name,
+			abbreviation,
+			additional_fields,
+			created_at,
+			updated_at
+		from country 
+		where ` + strings.Join(where, " and ") + `
+	` + FormatLimitOffset(filter.Limit, filter.Offset)
 
-	rows, err := tx.Query(ctx, query)
+	slog.Info("Countries query", "query", query, "args", args)
+
+	rows, err := tx.Query(ctx, query, args)
 	if err != nil {
 		return nil, 0, err
 	}
 
-	countries, err := pgx.CollectRows(rows, pgx.RowToStructByName[*etp.Country])
+	countries, err := pgx.CollectRows(rows, pgx.RowToStructByName[etp.Country])
 	if err != nil {
 		return nil, 0, err
 	}
-	return countries, n, nil
+
+	// Convert the slice of values to a slice of pointers.
+	countryPtrs := make([]*etp.Country, len(countries))
+	for i := range countries {
+		countryPtrs[i] = &countries[i] // take address of each country
+	}
+	return countryPtrs, n, nil
 }

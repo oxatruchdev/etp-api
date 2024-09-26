@@ -7,7 +7,7 @@ import (
 
 // TODO: Add rest of the fields for the school rating
 type Country struct {
-	ID int `json:"id"`
+	ID int `param:"id" query:"id" json:"id"`
 
 	// Name and abbreviation are used for display
 	Name             string `json:"name"`
@@ -15,7 +15,7 @@ type Country struct {
 	AdditionalFields any    `json:"additionalFields" db:"additional_fields"`
 
 	// Relations
-	Schools []*School `json:"schools"`
+	Schools []*School `json:"schools" db:"-"`
 
 	// CreatedAt and UpdatedAt are used for tracking
 	CreatedAt time.Time `json:"createdAt" db:"created_at"`
@@ -23,10 +23,10 @@ type Country struct {
 }
 
 type CountryFilter struct {
-	CountryId *int `json:"id"`
+	CountryId *int `param:"id" json:"id"`
 
-	Offset int `json:"offset"`
-	Limit  int `json:"limit"`
+	Offset int `json:"offset" query:"offset"`
+	Limit  int `json:"limit" query:"limit"`
 }
 
 type CountryService interface {
