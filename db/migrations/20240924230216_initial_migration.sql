@@ -6,8 +6,8 @@ CREATE TABLE IF NOT EXISTS country (
   additional_fields jsonb NULL,
 
   created_at timestamp with time zone NOT NULL default now(),
-  updated_at timestamp with time zone NOT NULL default now(),
-)
+  updated_at timestamp with time zone NOT NULL default now()
+);
 
 -- School table
 CREATE TABLE IF NOT EXISTS school (
@@ -20,8 +20,8 @@ CREATE TABLE IF NOT EXISTS school (
   updated_at timestamp with time zone NOT NULL default now(),
 
   -- relations
-  country_id integer REFERENCES country(id),
-)
+  country_id integer REFERENCES country(id)
+);
 
 -- School ratings table
 CREATE TABLE IF NOT EXISTS school_rating (
@@ -36,8 +36,8 @@ CREATE TABLE IF NOT EXISTS school_rating (
   updated_at timestamp with time zone NOT NULL default now(),
 
   -- relations
-  school_id integer REFERENCES school(id),
-)
+  school_id integer REFERENCES school(id)
+);
 
 -- Department table
 CREATE TABLE IF NOT EXISTS department (
@@ -48,8 +48,8 @@ CREATE TABLE IF NOT EXISTS department (
   created_at timestamp with time zone NOT NULL default now(),
   updated_at timestamp with time zone NOT NULL default now(),
 
-  school_id integer REFERENCES school(id),
-)
+  school_id integer REFERENCES school(id)
+);
 
 -- Course table
 CREATE TABLE IF NOT EXISTS course (
@@ -63,7 +63,7 @@ CREATE TABLE IF NOT EXISTS course (
 
   department_id integer REFERENCES department(id),
   school_id integer REFERENCES school(id)
-)
+);
 
 -- Professor table
 CREATE TABLE IF NOT EXISTS professor (
@@ -74,8 +74,8 @@ CREATE TABLE IF NOT EXISTS professor (
   created_at timestamp with time zone NOT NULL default now(),
   updated_at timestamp with time zone NOT NULL default now(),
 
-  school_id integer REFERENCES school(id),
-)
+  school_id integer REFERENCES school(id)
+);
 
 -- Professor Ratings table
 CREATE TABLE IF NOT EXISTS professor_rating (
@@ -99,8 +99,8 @@ CREATE TABLE IF NOT EXISTS professor_rating (
 
   -- relations
   professor_id integer REFERENCES professor(id),
-  course_id integer REFERENCES course(id),
-)
+  course_id integer REFERENCES course(id)
+);
 
 -- many-to-many relations
 
@@ -108,12 +108,12 @@ CREATE TABLE IF NOT EXISTS professor_rating (
 CREATE TABLE IF NOT EXISTS professor_course (
   id SERIAL PRIMARY KEY,
   professor_id integer REFERENCES professor(id),
-  course_id integer REFERENCES course(id),
-)
+  course_id integer REFERENCES course(id)
+);
 
 -- professor_department table
 CREATE TABLE IF NOT EXISTS professor_department (
   id SERIAL PRIMARY KEY,
   professor_id integer REFERENCES professor(id),
-  department_id integer REFERENCES department(id),
-)
+  department_id integer REFERENCES department(id)
+);
