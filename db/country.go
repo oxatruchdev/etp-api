@@ -19,7 +19,7 @@ func NewCountryService(db *DB) *CountryService {
 	}
 }
 
-func (cs *CountryService) CreateCountry(ctx context.Context, id int, country *etp.Country) error {
+func (cs *CountryService) CreateCountry(ctx context.Context, country *etp.Country) error {
 	tx, err := cs.db.BeginTx(ctx)
 	if err != nil {
 		return err

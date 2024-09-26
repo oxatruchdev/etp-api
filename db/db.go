@@ -71,7 +71,7 @@ func (db *DB) migrate() error {
 	}
 
 	// Read migration files from our embedded file system.
-	names, err := fs.Glob(migrationFS, "migration/*.sql")
+	names, err := fs.Glob(migrationFS, "migrations/*.sql")
 	if err != nil {
 		return err
 	}
