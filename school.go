@@ -14,13 +14,13 @@ type School struct {
 	Metadata     any    `json:"metadata" db:"metadata"`
 
 	// Country school belongs to
-	Country   *Country `json:"country" db:"-"`
+	Country   *Country `json:"country,omitempty" db:"-"`
 	CountryID int      `json:"countryId" db:"country_id"`
 
 	// Relations
-	Departments   []*Department   `json:"departments" db:"-"`
-	Professors    []*Professor    `json:"professors" db:"-"`
-	SchoolRatings []*SchoolRating `json:"ratings" db:"-"`
+	Departments   []*Department   `json:"departments,omitempty" db:"-"`
+	Professors    []*Professor    `json:"professors,omitempty" db:"-"`
+	SchoolRatings []*SchoolRating `json:"ratings,omitempty" db:"-"`
 
 	// CreatedAt and UpdatedAt are used for tracking
 	CreatedAt time.Time `json:"createdAt" db:"created_at"`

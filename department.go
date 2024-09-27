@@ -13,10 +13,10 @@ type Department struct {
 	Code string `json:"code"`
 
 	// Relations
-	School     *School      `json:"school" db:"-"`
+	School     *School      `json:"school,omitempty" db:"-"`
 	SchoolID   int          `json:"schoolId" db:"school_id"`
-	Professors []*Professor `json:"professors" db:"-"`
-	Courses    []*Course    `json:"courses" db:"-"`
+	Professors []*Professor `json:"professors,omitempty" db:"-"`
+	Courses    []*Course    `json:"courses,omitempty" db:"-"`
 
 	// CreatedAt and UpdatedAt are used for tracking
 	CreatedAt time.Time `json:"createdAt" db:"created_at"`

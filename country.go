@@ -15,7 +15,7 @@ type Country struct {
 	AdditionalFields any    `json:"additionalFields" db:"additional_fields"`
 
 	// Relations
-	Schools []*School `json:"schools" db:"-"`
+	Schools []*School `json:"schools omitempty" db:"-"`
 
 	// CreatedAt and UpdatedAt are used for tracking
 	CreatedAt time.Time `json:"createdAt" db:"created_at"`
