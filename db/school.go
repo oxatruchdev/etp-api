@@ -31,13 +31,15 @@ func (ss *SchoolService) CreateSchool(ctx context.Context, school *etp.School) e
 			(
 				name,
 				abbreviation,
-				country_id
+				country_id,
+				metadata
 			)
 		values
 			(
 				@name,
 				@abbreviation,
-				@countryId
+				@countryId,
+				@metadata
 			)
 	`
 
@@ -45,6 +47,7 @@ func (ss *SchoolService) CreateSchool(ctx context.Context, school *etp.School) e
 		"name":         school.Name,
 		"abbreviation": school.Abbreviation,
 		"countryId":    school.CountryID,
+		"metadata":     school.Metadata,
 	}
 
 	_, err = tx.Exec(ctx, query, args)
@@ -139,7 +142,7 @@ func updateSchool(ctx context.Context, tx *Tx, id int, upd *etp.SchoolUpdate) (*
 	}
 
 	if v := upd.Metadata; v != nil {
-		school.Metadata = v
+		school.Metadata = *v
 	}
 
 	query := `
@@ -147,8 +150,8 @@ func updateSchool(ctx context.Context, tx *Tx, id int, upd *etp.SchoolUpdate) (*
 			school
 		set
 			name = @name,
-			abbreviation = @abbreviation
-			metadata = @metadata
+			abbreviation = @abbreviation,
+			metadata = @metadata,
 			updated_at = now()
 		where
 			id = @id
@@ -163,6 +166,7 @@ func updateSchool(ctx context.Context, tx *Tx, id int, upd *etp.SchoolUpdate) (*
 
 	_, err = tx.Exec(ctx, query, args)
 	if err != nil {
+		slog.Error("error while updating school", "school", school, "error", err)
 		return nil, err
 	}
 
@@ -197,47 +201,51 @@ func getSchools(ctx context.Context, tx *Tx, filter etp.SchoolFilter) ([]*etp.Sc
 		args["id"] = *filter.SchoolId
 	}
 
-	var n int
 	query := `
+		select 
+			count(*)
+		from
+			school
+		where ` + strings.Join(where, " and ")
+
+	var n int
+	if err := tx.QueryRow(ctx, query, args).Scan(&n); err != nil {
+		return nil, 0, err
+	}
+
+	if n == 0 {
+		return nil, 0, nil
+	}
+
+	query = `
 		select
 			id,
 			name,
 			abbreviation,
-			country_id
+			metadata,
+			country_id,
 			created_at,
-			updated_at,
-			count(*) over()
+			updated_at
 		from
 			school
 		where ` + strings.Join(where, " and ") + `
+		order by id
 		` + FormatLimitOffset(filter.Offset, filter.Limit)
 
 	rows, err := tx.Query(ctx, query, args)
 	if err != nil {
 		return nil, 0, err
 	}
-	defer rows.Close()
 
-	var schools []*etp.School
-	for rows.Next() {
-		var school *etp.School
-		if err := rows.Scan(
-			&school.ID,
-			&school.Name,
-			&school.Abbreviation,
-			&school.CountryID,
-			&school.CreatedAt,
-			&school.UpdatedAt,
-			&n,
-		); err != nil {
-			return nil, 0, err
-		}
-
-		schools = append(schools, school)
-	}
-
-	if err := rows.Err(); err != nil {
+	schools, err := pgx.CollectRows(rows, pgx.RowToStructByName[etp.School])
+	if err != nil {
 		return nil, 0, err
 	}
-	return schools, n, nil
+
+	schoolPtrs := make([]*etp.School, len(schools))
+	for i := range schools {
+		schoolPtrs[i] = &schools[i]
+	}
+
+	return schoolPtrs, n, nil
 }

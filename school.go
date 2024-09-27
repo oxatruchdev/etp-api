@@ -6,7 +6,7 @@ import (
 )
 
 type School struct {
-	ID int `json:"id"`
+	ID int `param:"id" query:"id" json:"id"`
 
 	// Name and abbreviation are used for display
 	Name         string `json:"name"`
@@ -14,13 +14,13 @@ type School struct {
 	Metadata     any    `json:"metadata" db:"metadata"`
 
 	// Country school belongs to
-	Country   *Country `json:"country"`
-	CountryID int      `json:"countryId"`
+	Country   *Country `json:"country" db:"-"`
+	CountryID int      `json:"countryId" db:"country_id"`
 
 	// Relations
-	Departments   []*Department   `json:"departments"`
-	Professors    []*Professor    `json:"professors"`
-	SchoolRatings []*SchoolRating `json:"ratings"`
+	Departments   []*Department   `json:"departments" db:"-"`
+	Professors    []*Professor    `json:"professors" db:"-"`
+	SchoolRatings []*SchoolRating `json:"ratings" db:"-"`
 
 	// CreatedAt and UpdatedAt are used for tracking
 	CreatedAt time.Time `json:"createdAt" db:"created_at"`
@@ -56,5 +56,5 @@ type SchoolService interface {
 type SchoolUpdate struct {
 	Name         *string `json:"name"`
 	Abbreviation *string `json:"abbreviation"`
-	Metadata     any     `json:"metadata"`
+	Metadata     *any    `json:"metadata"`
 }
