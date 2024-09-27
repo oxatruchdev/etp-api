@@ -19,27 +19,26 @@ func (s *Server) registerSchoolRoutes() {
 func (s *Server) getSchools(c echo.Context) error {
 	var filter etp.SchoolFilter
 	if err := c.Bind(&filter); err != nil {
-		return err
+		return Error(c, etp.Errorf(etp.EINVALID, "invalid body"))
 	}
+
 	schools, n, err := s.SchoolService.GetSchools(c.Request().Context(), filter)
-	slog.Info("schools", "schools", schools)
 	if err != nil {
-		slog.Error("error while getting schools", "error", err)
-		return err
+		return Error(c, err)
 	}
+
 	return c.JSON(200, echo.Map{"schools": schools, "count": n})
 }
 
 func (s *Server) getSchool(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		return err
+		return Error(c, etp.Errorf(etp.EINVALID, "invalid id"))
 	}
 
 	school, err := s.SchoolService.GetSchoolById(c.Request().Context(), id)
 	if err != nil {
-		slog.Error("error while getting schools", "error", err)
-		return err
+		return Error(c, err)
 	}
 
 	return c.JSON(200, school)
@@ -47,13 +46,12 @@ func (s *Server) getSchool(c echo.Context) error {
 
 func (s *Server) createSchool(c echo.Context) error {
 	var school etp.School
-
 	if err := c.Bind(&school); err != nil {
-		return err
+		return Error(c, etp.Errorf(etp.EINVALID, "invalid body"))
 	}
 
 	if err := s.SchoolService.CreateSchool(c.Request().Context(), &school); err != nil {
-		return err
+		return Error(c, err)
 	}
 
 	return c.NoContent(http.StatusCreated)
@@ -62,17 +60,17 @@ func (s *Server) createSchool(c echo.Context) error {
 func (s *Server) updateSchool(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		return err
+		return Error(c, etp.Errorf(etp.EINVALID, "invalid id"))
 	}
 
 	var upd etp.SchoolUpdate
 	if err := c.Bind(&upd); err != nil {
-		return err
+		return Error(c, etp.Errorf(etp.EINVALID, "invalid body"))
 	}
 
 	school, err := s.SchoolService.UpdateSchool(c.Request().Context(), id, &upd)
 	if err != nil {
-		return err
+		return Error(c, err)
 	}
 
 	return c.JSON(200, school)
