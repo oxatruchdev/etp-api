@@ -27,33 +27,10 @@ func (cs *CountryService) CreateCountry(ctx context.Context, country *etp.Countr
 	}
 	defer tx.Rollback(ctx)
 
-	query := `
-		insert 
-		into country 
-			(
-				name, 
-				abbreviation, 
-				additional_fields
-			) 
-		values 
-			(
-				@name, 
-				@abbreviation, 
-				@additionalFields
-			)
-	`
-
-	args := pgx.NamedArgs{
-		"name":             country.Name,
-		"abbreviation":     country.Abbreviation,
-		"additionalFields": country.AdditionalFields,
-	}
-
-	_, err = tx.Exec(ctx, query, args)
+	err = createCountry(ctx, tx, country)
 	if err != nil {
-		slog.Error("error while creating country", "country", country, "error", err)
+		return err
 	}
-
 	return tx.Commit(ctx)
 }
 
@@ -84,28 +61,7 @@ func (cs *CountryService) GetCountryById(ctx context.Context, id int) (*etp.Coun
 
 	defer tx.Rollback(ctx)
 
-	query := `
-		select 
-			id, 
-			name, 
-			abbreviation, 
-			additional_fields, 
-			created_at, 
-			updated_at 
-		from country 
-		where id = @id
-	`
-
-	args := pgx.NamedArgs{
-		"id": id,
-	}
-
-	rows, err := tx.Query(ctx, query, args)
-	if err != nil {
-		return nil, err
-	}
-
-	country, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[*etp.Country])
+	country, err := getCountryById(ctx, tx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -121,30 +77,7 @@ func (cs *CountryService) UpdateCountry(ctx context.Context, id int, upd *etp.Co
 
 	defer tx.Rollback(ctx)
 
-	query := `
-		update country
-		set
-			name = @name,
-			abbreviation = @abbreviation,
-			additional_fields = @additionalFields
-			updated_at = @updated_at
-		where id = @id
-	`
-
-	args := pgx.NamedArgs{
-		"id":               id,
-		"name":             upd.Name,
-		"abbreviation":     upd.Abbreviation,
-		"additionalFields": upd.AdditionalFields,
-		"updated_at":       time.Now(),
-	}
-
-	_, err = tx.Exec(ctx, query, args)
-	if err != nil {
-		return nil, err
-	}
-
-	country, err := cs.GetCountryById(ctx, id)
+	country, err := updateCountry(ctx, tx, id, upd)
 	if err != nil {
 		return nil, err
 	}
@@ -166,8 +99,6 @@ func getCountries(ctx context.Context, tx *Tx, filter etp.CountryFilter) ([]*etp
 		from country
 		where ` + strings.Join(where, " and ")
 
-	slog.Info("Countries count query", "query", countQuery, "args", args)
-
 	var n int
 	err := tx.QueryRow(ctx, countQuery, args).Scan(&n)
 	if err != nil {
@@ -184,9 +115,8 @@ func getCountries(ctx context.Context, tx *Tx, filter etp.CountryFilter) ([]*etp
 			updated_at
 		from country 
 		where ` + strings.Join(where, " and ") + `
+		order by id	
 	` + FormatLimitOffset(filter.Limit, filter.Offset)
-
-	slog.Info("Countries query", "query", query, "args", args)
 
 	rows, err := tx.Query(ctx, query, args)
 	if err != nil {
@@ -204,4 +134,98 @@ func getCountries(ctx context.Context, tx *Tx, filter etp.CountryFilter) ([]*etp
 		countryPtrs[i] = &countries[i] // take address of each country
 	}
 	return countryPtrs, n, nil
+}
+
+func getCountryById(ctx context.Context, tx *Tx, id int) (*etp.Country, error) {
+	countries, n, err := getCountries(ctx, tx, etp.CountryFilter{
+		CountryId: &id,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if n == 0 {
+		return nil, etp.Errorf(etp.ENOTFOUND, "country with id %d not found", id)
+	}
+
+	return countries[0], nil
+}
+
+func updateCountry(ctx context.Context, tx *Tx, id int, upd *etp.CountryUpdate) (*etp.Country, error) {
+	country, err := getCountryById(ctx, tx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	if v := upd.Name; v != nil {
+		country.Name = *v
+	}
+
+	if v := upd.Abbreviation; v != nil {
+		country.Abbreviation = *v
+	}
+
+	if v := upd.AdditionalFields; v != nil {
+		country.AdditionalFields = *v
+	}
+
+	query := `
+		update country
+		set
+			name = @name,
+			abbreviation = @abbreviation,
+			additional_fields = @additionalFields,
+			updated_at = now()
+		where id = @id
+	`
+
+	args := pgx.NamedArgs{
+		"id":               id,
+		"name":             country.Name,
+		"abbreviation":     country.Abbreviation,
+		"additionalFields": country.AdditionalFields,
+	}
+
+	_, err = tx.Exec(ctx, query, args)
+	if err != nil {
+		slog.Error("error while updating country", "error", err)
+		return nil, err
+	}
+
+	// get time in microseconds golang
+	country.UpdatedAt = time.Now()
+
+	return country, err
+}
+
+func createCountry(ctx context.Context, tx *Tx, country *etp.Country) error {
+	query := `
+		insert 
+		into country 
+			(
+				name, 
+				abbreviation, 
+				additional_fields
+			) 
+		values 
+			(
+				@name, 
+				@abbreviation, 
+				@additionalFields
+			)
+	`
+
+	args := pgx.NamedArgs{
+		"name":             country.Name,
+		"abbreviation":     country.Abbreviation,
+		"additionalFields": country.AdditionalFields,
+	}
+
+	_, err := tx.Exec(ctx, query, args)
+	if err != nil {
+		slog.Error("error while creating country", "country", country, "error", err)
+		return err
+	}
+
+	return nil
 }

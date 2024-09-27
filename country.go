@@ -41,6 +41,6 @@ type CountryService interface {
 
 type CountryUpdate struct {
 	Name             *string `json:"name"`
-	Abbreviation     string  `json:"abbreviation"`
-	AdditionalFields any     `json:"additionalFields"`
+	Abbreviation     *string `json:"abbreviation"`
+	AdditionalFields *any    `json:"additionalFields"`
 }
