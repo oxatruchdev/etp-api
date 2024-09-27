@@ -106,7 +106,8 @@ func updateDepartment(ctx context.Context, tx *Tx, id int, upd *etp.DepartmentUp
 			department
 		set
 			name = @name,
-			code = @code
+			code = @code,
+			updated_at = now()
 		where
 			id = @id
 	`
@@ -119,6 +120,7 @@ func updateDepartment(ctx context.Context, tx *Tx, id int, upd *etp.DepartmentUp
 
 	_, err = tx.Exec(ctx, query, args)
 	if err != nil {
+		slog.Error("Error updating department", "err", err)
 		return nil, err
 	}
 
@@ -172,23 +174,32 @@ func getDepartments(ctx context.Context, tx *Tx, filter *etp.DepartmentFilter) (
 			id,
 			name,
 			code,
-			school_id
+			school_id,
+			created_at,
+			updated_at
 		from
 			department
 		where ` + strings.Join(where, " and ") + `
-		` + FormatLimitOffset(filter.Offset, filter.Limit)
+		order by name asc
+		` + FormatLimitOffset(filter.Limit, filter.Offset)
 
 	rows, err := tx.Query(ctx, query, args)
 	if err != nil {
 		return nil, 0, err
 	}
 
-	departments, err := pgx.CollectRows(rows, pgx.RowToStructByName[*etp.Department])
+	departments, err := pgx.CollectRows(rows, pgx.RowToStructByName[etp.Department])
 	if err != nil {
+		slog.Error("error while getting departments", "error", err)
 		return nil, 0, err
 	}
 
-	return departments, 0, nil
+	departmentsPtr := make([]*etp.Department, len(departments))
+	for i := range departments {
+		departmentsPtr[i] = &departments[i]
+	}
+
+	return departmentsPtr, counter, nil
 }
 
 func createDepartment(ctx context.Context, tx *Tx, department *etp.Department) error {

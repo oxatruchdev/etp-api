@@ -13,10 +13,10 @@ type Department struct {
 	Code string `json:"code"`
 
 	// Relations
-	School     *School      `json:"school"`
-	SchoolID   int          `json:"schoolId"`
-	Professors []*Professor `json:"professors"`
-	Courses    []*Course    `json:"courses"`
+	School     *School      `json:"school" db:"-"`
+	SchoolID   int          `json:"schoolId" db:"school_id"`
+	Professors []*Professor `json:"professors" db:"-"`
+	Courses    []*Course    `json:"courses" db:"-"`
 
 	// CreatedAt and UpdatedAt are used for tracking
 	CreatedAt time.Time `json:"createdAt" db:"created_at"`
@@ -24,11 +24,11 @@ type Department struct {
 }
 
 type DepartmentFilter struct {
-	ID       *int `json:"id"`
-	SchoolID *int `json:"schoolId"`
+	ID       *int `json:"id" query:"id"`
+	SchoolID *int `json:"schoolId" query:"schoolId"`
 
-	Offset int `json:"offset"`
-	Limit  int `json:"limit"`
+	Offset int `json:"offset" query:"offset"`
+	Limit  int `json:"limit" query:"limit"`
 }
 
 type DepartmentService interface {
