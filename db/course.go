@@ -110,9 +110,11 @@ func updateCourse(ctx context.Context, tx *Tx, id int, upd *etp.CourseUpdate) (*
 	if v := upd.Code; v != nil {
 		course.Code = *v
 	}
+
 	if v := upd.Name; v != nil {
 		course.Name = *v
 	}
+
 	if v := upd.Credits; v != nil {
 		course.Credits = *v
 	}
@@ -121,12 +123,14 @@ func updateCourse(ctx context.Context, tx *Tx, id int, upd *etp.CourseUpdate) (*
 		update
 			course
 		set
-			name = @name
-			code = @code
-			credits = @credits
+			name = @name,
+			code = @code,
+			credits = @credits,
+			updated_at = now()
 		where id = @id
 	`
 	args := pgx.NamedArgs{
+		"id":      id,
 		"name":    course.Name,
 		"code":    course.Code,
 		"credits": course.Credits,
@@ -204,6 +208,11 @@ func getCourses(ctx context.Context, tx *Tx, filter etp.CourseFilter) ([]*etp.Co
 		args["departmentId"] = *v
 	}
 
+	if v := filter.ID; v != nil {
+		where = append(where, "id = @id")
+		args["id"] = *v
+	}
+
 	countQuery := `
 		select 
 			count(*)
@@ -224,13 +233,16 @@ func getCourses(ctx context.Context, tx *Tx, filter etp.CourseFilter) ([]*etp.Co
 	query := `
 		select 
 			id,
+			name,
 			code,
 			credits,
 			department_id,
-			school_id
+			school_id,
+			created_at,
+			updated_at
 		from
 			course
-		where` + strings.Join(where, " and ") + `
+		where ` + strings.Join(where, " and ") + `
 	` + FormatLimitOffset(filter.Limit, filter.Offset)
 
 	rows, err := tx.Query(ctx, query, args)
@@ -238,10 +250,15 @@ func getCourses(ctx context.Context, tx *Tx, filter etp.CourseFilter) ([]*etp.Co
 		return nil, 0, err
 	}
 
-	courses, err := pgx.CollectRows(rows, pgx.RowToStructByName[*etp.Course])
+	courses, err := pgx.CollectRows(rows, pgx.RowToStructByName[etp.Course])
 	if err != nil {
 		return nil, 0, err
 	}
 
-	return courses, n, nil
+	coursesPtrs := make([]*etp.Course, len(courses))
+	for i := range courses {
+		coursesPtrs[i] = &courses[i]
+	}
+
+	return coursesPtrs, n, nil
 }

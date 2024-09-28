@@ -33,6 +33,7 @@ func NewServer() *Server {
 		s.registerCountryRoutes()
 		s.registerDepartmentRoutes()
 		s.registerSchoolRoutes()
+		s.registerCourseRoutes()
 	}
 
 	return s

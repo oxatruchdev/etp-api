@@ -13,11 +13,11 @@ type Course struct {
 	Credits int    `json:"credits"`
 
 	// Relations
-	Department   *Department  `json:"department"`
+	Department   *Department  `json:"department,omitempty" db:"-"`
 	DepartmentID int          `json:"departmentId" db:"department_id"`
-	School       *School      `json:"school"`
-	SchoolID     int          `json:"schoolId" db:"department_id"`
-	Professors   []*Professor `json:"professors"`
+	School       *School      `json:"school,omitempty" db:"-"`
+	SchoolID     int          `json:"schoolId" db:"school_id"`
+	Professors   []*Professor `json:"professors,omitempty" db:"-"`
 
 	// CreatedAt and UpdatedAt are used for tracking
 	CreatedAt time.Time `json:"createdAt" db:"created_at"`
