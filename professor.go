@@ -12,13 +12,13 @@ type Professor struct {
 	FirstName string `json:"firstName" db:"first_name"`
 	LastName  string `json:"lastName" db:"last_name"`
 
-	School   *School `json:"school"`
+	School   *School `json:"school,omitempty" db:"-"`
 	SchoolId int     `json:"schoolId"`
 
 	// Relations
-	Ratings     []*ProfessorRating `json:"ratings"`
-	Departments []*Department      `json:"department"`
-	Courses     []*Course          `json:"courses"`
+	Ratings     []*ProfessorRating `json:"ratings,omitempty" db:"-"`
+	Departments []*Department      `json:"departments,omitempty" db:"-"`
+	Courses     []*Course          `json:"courses,omitempty" db:"-"`
 
 	// CreatedAt and UpdatedAt are used for tracking
 	CreatedAt time.Time `json:"createdAt" db:"created_at"`
@@ -26,10 +26,10 @@ type Professor struct {
 }
 
 type ProfessorFilter struct {
-	ID *int `json:"id"`
+	ID *int `json:"id" param:"id"`
 
-	Offset int `json:"offset"`
-	Limit  int `json:"limit"`
+	Offset int `json:"offset" query:"offset"`
+	Limit  int `json:"limit" query:"limit"`
 }
 
 type ProfessorService interface {

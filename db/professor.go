@@ -119,7 +119,8 @@ func updateProfessor(ctx context.Context, tx *Tx, id int, upd *etp.ProfessorUpda
 			professor
 		set
 			first_name = @firstName,
-			last_name = @lastName
+			last_name = @lastName,
+			updated_at = now()
 		where
 			id = @id
 	`
@@ -180,23 +181,30 @@ func getProfessors(ctx context.Context, tx *Tx, filter *etp.ProfessorFilter) ([]
 			id,
 			first_name,
 			last_name,
-			school_id
+			school_id,
+			created_at,
+			updated_at
 		from
 			professor
 		where ` + strings.Join(where, " and ") + `
-		` + FormatLimitOffset(filter.Offset, filter.Limit)
+		` + FormatLimitOffset(filter.Limit, filter.Offset)
 
 	rows, err := tx.Query(ctx, query, args)
 	if err != nil {
 		return nil, 0, err
 	}
 
-	professors, err := pgx.CollectRows(rows, pgx.RowToStructByName[*etp.Professor])
+	professors, err := pgx.CollectRows(rows, pgx.RowToStructByName[etp.Professor])
 	if err != nil {
 		return nil, 0, err
 	}
 
-	return professors, 0, nil
+	professorPtrs := make([]*etp.Professor, len(professors))
+	for i := range professors {
+		professorPtrs[i] = &professors[i]
+	}
+
+	return professorPtrs, counter, nil
 }
 
 func createProfessor(ctx context.Context, tx *Tx, professor *etp.Professor) error {
