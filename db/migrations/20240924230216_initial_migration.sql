@@ -5,8 +5,8 @@ CREATE TABLE IF NOT EXISTS country (
   abbreviation character varying(255) NOT NULL,
   additional_fields jsonb NULL,
 
-  created_at timestamp with time zone NOT NULL default now(),
-  updated_at timestamp with time zone NOT NULL default now()
+  created_at TIMESTAMPTZ NOT NULL default now(),
+  updated_at TIMESTAMPTZ NOT NULL default now()
 );
 
 -- School table
@@ -16,8 +16,8 @@ CREATE TABLE IF NOT EXISTS school (
   abbreviation character varying(255) NOT NULL,
   metadata jsonb NULL,
 
-  created_at timestamp with time zone NOT NULL default now(),
-  updated_at timestamp with time zone NOT NULL default now(),
+  created_at TIMESTAMPTZ NOT NULL default now(),
+  updated_at TIMESTAMPTZ NOT NULL default now(),
 
   -- relations
   country_id integer REFERENCES country(id)
@@ -32,8 +32,8 @@ CREATE TABLE IF NOT EXISTS school_rating (
   approval_count integer NOT NULL default 0,
   updated_count integer NOT NULL default 0,
 
-  created_at timestamp with time zone NOT NULL default now(),
-  updated_at timestamp with time zone NOT NULL default now(),
+  created_at TIMESTAMPTZ NOT NULL default now(),
+  updated_at TIMESTAMPTZ NOT NULL default now(),
 
   -- relations
   school_id integer REFERENCES school(id)
@@ -45,8 +45,8 @@ CREATE TABLE IF NOT EXISTS department (
   name character varying(255) NOT NULL,
   code character varying(255) NOT NULL,
 
-  created_at timestamp with time zone NOT NULL default now(),
-  updated_at timestamp with time zone NOT NULL default now(),
+  created_at TIMESTAMPTZ NOT NULL default now(),
+  updated_at TIMESTAMPTZ NOT NULL default now(),
 
   school_id integer REFERENCES school(id)
 );
@@ -58,8 +58,8 @@ CREATE TABLE IF NOT EXISTS course (
   code character varying(255) NOT NULL,
   credits integer NOT NULL,
   
-  created_at timestamp with time zone NOT NULL default now(),
-  updated_at timestamp with time zone NOT NULL default now(),
+  created_at TIMESTAMPTZ NOT NULL default now(),
+  updated_at TIMESTAMPTZ NOT NULL default now(),
 
   department_id integer REFERENCES department(id),
   school_id integer REFERENCES school(id)
@@ -71,8 +71,8 @@ CREATE TABLE IF NOT EXISTS professor (
   first_name character varying(255) NOT NULL,
   last_name character varying(255) NOT NULL,
 
-  created_at timestamp with time zone NOT NULL default now(),
-  updated_at timestamp with time zone NOT NULL default now(),
+  created_at TIMESTAMPTZ NOT NULL default now(),
+  updated_at TIMESTAMPTZ NOT NULL default now(),
 
   school_id integer REFERENCES school(id)
 );
@@ -94,8 +94,8 @@ CREATE TABLE IF NOT EXISTS professor_rating (
   updated_count integer NOT NULL default 0,
 
   -- date
-  created_at timestamp with time zone NOT NULL default now(),
-  updated_at timestamp with time zone NOT NULL default now(),
+  created_at TIMESTAMPTZ NOT NULL default now(),
+  updated_at TIMESTAMPTZ NOT NULL default now(),
 
   -- relations
   professor_id integer REFERENCES professor(id),

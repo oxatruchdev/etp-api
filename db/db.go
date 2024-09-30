@@ -5,6 +5,7 @@ import (
 	"embed"
 	"fmt"
 	"io/fs"
+	"log/slog"
 	"slices"
 	"time"
 
@@ -66,7 +67,7 @@ func (db *DB) Open() (err error) {
 // migrate sets up migration tracking and executes pending migration files.
 func (db *DB) migrate() error {
 	// Ensure the 'migrations' table exists so we don't duplicate migrations.
-	if _, err := db.db.Exec(db.ctx, `CREATE TABLE IF NOT EXISTS migrations (name TEXT PRIMARY KEY);`); err != nil {
+	if _, err := db.db.Exec(db.ctx, `CREATE TABLE IF NOT EXISTS migrations (name TEXT PRIMARY KEY, created_at TIMESTAMPTZ default now());`); err != nil {
 		return fmt.Errorf("cannot create migrations table: %w", err)
 	}
 
@@ -80,6 +81,7 @@ func (db *DB) migrate() error {
 
 	// Loop over all migration files and execute them in order.
 	for _, name := range names {
+		slog.Info("migrating", "name", name)
 		if err := db.migrateFile(name); err != nil {
 			return fmt.Errorf("migration error: name=%q err=%w", name, err)
 		}

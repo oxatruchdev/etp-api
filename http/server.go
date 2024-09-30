@@ -19,6 +19,7 @@ type Server struct {
 	ProfessorRatingService etp.ProfessorRatingService
 	SchoolService          etp.SchoolService
 	SchoolRatingService    etp.SchoolRatingService
+	UserService            etp.UserService
 }
 
 func NewServer() *Server {

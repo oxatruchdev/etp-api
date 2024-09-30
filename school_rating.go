@@ -16,8 +16,11 @@ type SchoolRating struct {
 	UpdatedCount  int    `json:"updateCount" db:"updated_count"`
 
 	// Data related to the school
-	School   *School `json:"school"`
+	School   *School `json:"school,omitempty" db:"-"`
 	SchoolID int     `json:"schoolId"`
+
+	User   *User `json:"user"`
+	UserID int   `json:"userId" db:"user_id"`
 
 	// CreatedAt and UpdatedAt are used for tracking
 	CreatedAt time.Time `json:"createdAt" db:"created_at"`

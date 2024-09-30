@@ -21,10 +21,12 @@ type ProfessorRating struct {
 	UpdatedCount   int  `json:"updateCount" db:"updated_count"`
 
 	// Relations
-	Course      Course    `json:"course,omitempty" db:"-"`
-	CourseId    int       `json:"courseId"`
-	Professor   Professor `json:"professor,omitempty" db:"-"`
-	ProfessorId int       `json:"professorId"`
+	Course      *Course    `json:"course,omitempty" db:"-"`
+	CourseId    int        `json:"courseId"`
+	Professor   *Professor `json:"professor,omitempty" db:"-"`
+	ProfessorId int        `json:"professorId"`
+	User        *User      `json:"user,omitempty" db:"-"`
+	UserId      int        `json:"userId" db:"user_id"`
 
 	// CreatedAt and UpdatedAt are used for tracking
 	CreatedAt time.Time `json:"createdAt" db:"created_at"`
