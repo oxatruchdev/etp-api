@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"log/slog"
 	"strings"
 
 	"github.com/Evalua-Tu-Profe/etp-api"
@@ -117,7 +118,7 @@ func updateProfessorRating(ctx context.Context, tx *Tx, id int, upd *etp.Profess
 		return nil, err
 	}
 
-	if professorRating.UpdatedCount == 2 {
+	if professorRating.UpdatedCount == 3 {
 		return nil, &etp.Error{Code: etp.ECONFLICT, Message: "professor rating has been updated too many times"}
 	}
 
@@ -145,6 +146,8 @@ func updateProfessorRating(ctx context.Context, tx *Tx, id int, upd *etp.Profess
 		professorRating.Comment = *v
 	}
 
+	professorRating.UpdatedCount++
+
 	query := `
 		UPDATE professor_rating
 		SET
@@ -155,6 +158,8 @@ func updateProfessorRating(ctx context.Context, tx *Tx, id int, upd *etp.Profess
 			grade = @grade,
 			textbook_required = @textbookRequired,
 			approvals_count = @approvalsCount,
+			is_approved = @isApproved,
+			updated_count = @updatedCount,
 			updated_at = NOW()
 		WHERE id = @id
 	`
@@ -167,7 +172,9 @@ func updateProfessorRating(ctx context.Context, tx *Tx, id int, upd *etp.Profess
 		"mandatoryAttendance": professorRating.MandatoryAttendance,
 		"grade":               professorRating.Grade,
 		"textbookRequired":    professorRating.TextbookRequired,
-		"approvalsCount":      professorRating.ApprovalsCount,
+		"approvalsCount":      0,
+		"isApproved":          false,
+		"updatedCount":        professorRating.UpdatedCount,
 	}
 
 	_, err = tx.Exec(ctx, query, args)
@@ -217,7 +224,7 @@ func approveProfessorRating(ctx context.Context, tx *Tx, id int) error {
 }
 
 func getProfessorRatingById(ctx context.Context, tx *Tx, id int) (*etp.ProfessorRating, error) {
-	professorRatings, n, err := getProfessorRatings(ctx, tx, &etp.ProfessorRatingFilter{ProfessorId: &id})
+	professorRatings, n, err := getProfessorRatings(ctx, tx, &etp.ProfessorRatingFilter{ProfessorRatingId: &id})
 	if err != nil {
 		return nil, err
 	}
@@ -242,6 +249,11 @@ func getProfessorRatings(ctx context.Context, tx *Tx, filter *etp.ProfessorRatin
 		args["courseId"] = *v
 	}
 
+	if v := filter.ProfessorRatingId; v != nil {
+		where = append(where, "id = @id")
+		args["id"] = *v
+	}
+
 	query := `
 		select count(*) 
 		from professor_rating
@@ -253,27 +265,48 @@ func getProfessorRatings(ctx context.Context, tx *Tx, filter *etp.ProfessorRatin
 		return nil, 0, err
 	}
 
+	slog.Info("total", "n", n)
 	if n == 0 {
 		return nil, 0, nil
 	}
 
 	query = `
-		SELECT * FROM professor_rating
+		SELECT 
+			id,
+			rating,
+			comment,
+			would_take_again,
+			mandatory_attendance,
+			grade,
+			textbook_required,
+			approvals_count,
+			is_approved,
+			created_at,
+			course_id,
+			professor_id,
+			updated_at,
+			updated_count
+		FROM professor_rating
 		WHERE ` + strings.Join(where, " AND ") + `
-		ORDER BY created_at DESC ` + ` 
-		` + FormatLimitOffset(filter.Offset, filter.Limit)
+		ORDER BY updated_at DESC ` + ` 
+		` + FormatLimitOffset(filter.Limit, filter.Offset)
 
 	rows, err := tx.Query(ctx, query, args)
 	if err != nil {
 		return nil, 0, err
 	}
 
-	professorRatings, err := pgx.CollectRows(rows, pgx.RowToStructByName[*etp.ProfessorRating])
+	professorRatings, err := pgx.CollectRows(rows, pgx.RowToStructByName[etp.ProfessorRating])
 	if err != nil {
 		return nil, 0, err
 	}
 
-	return professorRatings, n, nil
+	professorRatingsPtr := make([]*etp.ProfessorRating, len(professorRatings))
+	for i := range professorRatings {
+		professorRatingsPtr[i] = &professorRatings[i]
+	}
+
+	return professorRatingsPtr, n, nil
 }
 
 func createProfessorRating(ctx context.Context, tx *Tx, professorRating *etp.ProfessorRating) error {

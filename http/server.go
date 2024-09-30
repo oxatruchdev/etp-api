@@ -35,6 +35,7 @@ func NewServer() *Server {
 		s.registerSchoolRoutes()
 		s.registerCourseRoutes()
 		s.registerProfessorRoutes()
+		s.registerProfessorRatingRoutes()
 	}
 
 	return s

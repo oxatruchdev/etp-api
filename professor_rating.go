@@ -21,9 +21,9 @@ type ProfessorRating struct {
 	UpdatedCount   int  `json:"updateCount" db:"updated_count"`
 
 	// Relations
-	Course      Course    `json:"course"`
+	Course      Course    `json:"course,omitempty" db:"-"`
 	CourseId    int       `json:"courseId"`
-	Professor   Professor `json:"professor"`
+	Professor   Professor `json:"professor,omitempty" db:"-"`
 	ProfessorId int       `json:"professorId"`
 
 	// CreatedAt and UpdatedAt are used for tracking
@@ -32,11 +32,12 @@ type ProfessorRating struct {
 }
 
 type ProfessorRatingFilter struct {
-	ProfessorId *int `json:"professorId"`
-	CourseId    *int `json:"courseId"`
+	ProfessorRatingId *int `json:"id" query:"id"`
+	ProfessorId       *int `json:"professorId" query:"professorId"`
+	CourseId          *int `json:"courseId" query:"courseId"`
 
-	Offset int `json:"offset"`
-	Limit  int `json:"limit"`
+	Offset int `json:"offset" query:"offset"`
+	Limit  int `json:"limit" query:"limit"`
 }
 
 type ProfessorRatingService interface {
