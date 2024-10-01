@@ -3,9 +3,12 @@ package http
 import (
 	"fmt"
 	"log/slog"
+	"net/http"
 
 	"github.com/Evalua-Tu-Profe/etp-api"
+	"github.com/Evalua-Tu-Profe/etp-api/cmd/web"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
 type Server struct {
@@ -24,6 +27,10 @@ type Server struct {
 
 func NewServer() *Server {
 	e := echo.New()
+	e.Use(middleware.Logger())
+	e.Use(middleware.Recover())
+	fileServer := http.FileServer(http.FS(web.Files))
+	e.GET("/assets/*", echo.WrapHandler(fileServer))
 
 	s := &Server{
 		Echo: e,
@@ -37,6 +44,7 @@ func NewServer() *Server {
 		s.registerCourseRoutes()
 		s.registerProfessorRoutes()
 		s.registerProfessorRatingRoutes()
+		s.registerAuthRoutes()
 	}
 
 	return s

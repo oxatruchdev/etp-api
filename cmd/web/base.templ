@@ -1,0 +1,18 @@
+package web
+
+templ Base(title string) {
+	<!DOCTYPE html>
+	<html class="h-full bg-white">
+		<head>
+			<meta charset="utf-8"/>
+			<title>{ title }</title>
+			<link href="assets/css/output.css" rel="stylesheet"/>
+			<script src="assets/js/htmx.min.js"></script>
+		</head>
+		<body class="h-full">
+			<main>
+				{ children... }
+			</main>
+		</body>
+	</html>
+}
