@@ -15,3 +15,6 @@ migration:
 	name=$(DATE)_$${desc// /_}.sql; \
 	touch $(MIGRATION_DIR)/$$name; \
 	echo "Created migration file: $(MIGRATION_DIR)/$$name"
+
+seed:
+	@PGPASSWORD=password psql -h localhost -U postgres -d etp -f ./db/seed.sql
