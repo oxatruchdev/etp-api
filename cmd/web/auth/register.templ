@@ -1,0 +1,18 @@
+package auth
+
+import (
+	"github.com/Evalua-Tu-Profe/etp-api/cmd/web"
+)
+
+templ Register(registerFormProps RegisterFormProps) {
+	@web.Base("Crear Cuenta") {
+		<div class="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
+			<div class="sm:mx-auto sm:w-full sm:max-w-sm">
+				<h2 class="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">Crea tu cuenta</h2>
+			</div>
+			<div hx-ext="response-targets" class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
+				@RegisterForm(registerFormProps)
+			</div>
+		</div>
+	}
+}

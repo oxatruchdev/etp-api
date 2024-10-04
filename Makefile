@@ -6,6 +6,7 @@ DATE := $(shell date +%Y%m%d%H%M%S)
 build:
 	@echo "Building..."
 	@templ generate
+	@pnpm install
 	@npx tailwindcss -i cmd/web/assets/css/input.css -o cmd/web/assets/css/output.css
 	@go build -o main cmd/etp/main.go
 

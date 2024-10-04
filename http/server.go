@@ -23,14 +23,21 @@ type Server struct {
 	SchoolService          etp.SchoolService
 	SchoolRatingService    etp.SchoolRatingService
 	UserService            etp.UserService
+	RoleService            etp.RoleService
 }
 
 func NewServer() *Server {
 	e := echo.New()
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
+
+	// Caching static files
 	fileServer := http.FileServer(http.FS(web.Files))
-	e.GET("/assets/*", echo.WrapHandler(fileServer))
+	e.GET("/assets/*", func(c echo.Context) error {
+		c.Response().Header().Set("Cache-Control", "max-age=31536000, public")
+		fileServer.ServeHTTP(c.Response(), c.Request())
+		return nil
+	})
 
 	s := &Server{
 		Echo: e,
@@ -45,6 +52,7 @@ func NewServer() *Server {
 		s.registerProfessorRoutes()
 		s.registerProfessorRatingRoutes()
 		s.registerAuthRoutes()
+		s.registerHomeRoutes()
 	}
 
 	return s

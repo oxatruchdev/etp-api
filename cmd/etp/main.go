@@ -47,6 +47,8 @@ func main() {
 	professorServiceRating := db.NewProfessorRatingService(m.DB)
 	departmentService := db.NewDepartmentService(m.DB)
 	courseService := db.NewCourseService(m.DB)
+	userService := db.NewUserService(m.DB)
+	roleService := db.NewRoleService(m.DB)
 
 	m.HTTPServer.CountryService = countryService
 	m.HTTPServer.SchoolService = schoolService
@@ -55,6 +57,8 @@ func main() {
 	m.HTTPServer.ProfessorRatingService = professorServiceRating
 	m.HTTPServer.DepartmentService = departmentService
 	m.HTTPServer.CourseService = courseService
+	m.HTTPServer.UserService = userService
+	m.HTTPServer.RoleService = roleService
 
 	slog.Info("Starting server")
 	if err := m.HTTPServer.Start(m.Config.ServerPort); err != nil {
