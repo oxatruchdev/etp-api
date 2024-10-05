@@ -1,0 +1,50 @@
+package components
+
+templ Navbar(isAuthenticated bool) {
+	<div class="navbar bg-base-100">
+		<div class="navbar-start">
+			<a class="btn btn-ghost text-xl">Evalua Tu Profe</a>
+		</div>
+		<div class="navbar-center">
+			<form class="flex items-center" hx-post="/search" hx-target="#search-results">
+				<select name="type" class="select select-bordered select-md">
+					<option disabled selected>Choose</option>
+					<option value="school">Universidad</option>
+					<option value="professor">Profesor</option>
+				</select>
+				<div class="dropdown dropdown-end">
+					<input type="text" name="search" placeholder="Buscar" class="input ml-2 input-bordered w-full max-w-xs"/>
+					<ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow">
+						<li>
+							<div class="flex flex-col align-start">
+								<a class="hover:underline flex-start" href="#">Test</a>
+								<p class="text-sm flex-start">
+									<span class="fi fi-gt"></span>
+								</p>
+							</div>
+						</li>
+					</ul>
+				</div>
+			</form>
+		</div>
+		<div class="navbar-end">
+			<div class="dropdown dropdown-end">
+				<div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">
+					<div class="w-10 rounded-full">
+						<img src="https://placeimg.com/80/80/people"/>
+					</div>
+				</div>
+				<ul
+					tabindex="0"
+					class="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-48 p-2 shadow"
+				>
+					<li>
+						<a>Profile</a>
+					</li>
+					<li><a>Settings</a></li>
+					<li><a>Logout</a></li>
+				</ul>
+			</div>
+		</div>
+	</div>
+}

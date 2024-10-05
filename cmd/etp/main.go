@@ -60,6 +60,8 @@ func main() {
 	m.HTTPServer.UserService = userService
 	m.HTTPServer.RoleService = roleService
 
+	m.HTTPServer.Config = m.Config
+
 	slog.Info("Starting server")
 	if err := m.HTTPServer.Start(m.Config.ServerPort); err != nil {
 		slog.Error("Error starting server: ", "error", err)

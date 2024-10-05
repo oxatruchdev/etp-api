@@ -10,8 +10,10 @@ import (
 
 // Config holds all the configuration variables from .env
 type Config struct {
-	DatabaseURL string
-	ServerPort  int
+	DatabaseURL      string
+	ServerPort       int
+	JWTAccessSecret  string
+	JWTRefreshSecret string
 }
 
 func NewConfig() *Config {
@@ -27,6 +29,8 @@ func (c *Config) LoadConfig() error {
 
 	c.DatabaseURL = getEnv("DATABASE_URL", "postgres://postgres:password@localhost:5432/etp?sslmode=disable")
 	c.ServerPort = getEnvAsInt("SERVER_PORT", 1234)
+	c.JWTAccessSecret = getEnv("JWT_ACCESS_SECRET", "secret")
+	c.JWTRefreshSecret = getEnv("JWT_REFRESH_SECRET", "secret")
 
 	return nil
 }

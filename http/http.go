@@ -55,3 +55,5 @@ func Render(ctx echo.Context, statusCode int, t templ.Component) error {
 
 	return ctx.HTML(statusCode, buf.String())
 }
+
+type Session struct{}

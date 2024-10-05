@@ -28,8 +28,9 @@ type School struct {
 }
 
 type SchoolFilter struct {
-	SchoolId  *int `json:"id"`
-	CountryID *int `json:"countryId"`
+	SchoolId   *int    `json:"id"`
+	CountryID  *int    `json:"countryId"`
+	SchoolName *string `json:"name"`
 
 	Offset int `json:"offset"`
 	Limit  int `json:"limit"`

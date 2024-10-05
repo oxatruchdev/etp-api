@@ -2,7 +2,7 @@ package web
 
 templ Base(title string) {
 	<!DOCTYPE html>
-	<html class="h-full bg-white">
+	<html class="h-full">
 		<head>
 			<meta charset="utf-8"/>
 			<title>{ title }</title>
@@ -10,6 +10,10 @@ templ Base(title string) {
 			<meta name="viewport" content="width=device-width, initial-scale=1"/>
 			<script src="assets/js/htmx.min.js"></script>
 			<script src="https://unpkg.com/htmx-ext-response-targets@2.0.0/response-targets.js"></script>
+			<link
+				rel="stylesheet"
+				href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css"
+			/>
 		</head>
 		<body class="h-screen flex flex-col justify-between">
 			<main>

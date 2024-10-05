@@ -1,6 +1,7 @@
 package http
 
 import (
+	"log/slog"
 	"net/http"
 
 	"github.com/Evalua-Tu-Profe/etp-api/cmd/web"
@@ -8,9 +9,13 @@ import (
 )
 
 func (s *Server) registerHomeRoutes() {
-	s.Echo.GET("/", s.home)
+	s.Echo.GET("/", s.home, s.AuthMiddleware)
 }
 
 func (s *Server) home(c echo.Context) error {
-	return Render(c, http.StatusOK, web.Home())
+	isAuthenticated := c.Get("isAuthenticated").(bool)
+	slog.Info("Rendering home", "isAuth", isAuthenticated)
+	return Render(c, http.StatusOK, web.Home(web.HomeProps{
+		IsAuthenticated: isAuthenticated,
+	}))
 }

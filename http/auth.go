@@ -3,6 +3,7 @@ package http
 import (
 	"log/slog"
 	"net/http"
+	"time"
 
 	"github.com/Evalua-Tu-Profe/etp-api"
 	"github.com/Evalua-Tu-Profe/etp-api/cmd/web/auth"
@@ -77,7 +78,7 @@ func (s *Server) login(c echo.Context) error {
 		return Error(c, err)
 	}
 
-	if foundUser == nil {
+	if foundUser == nil || bcrypt.CompareHashAndPassword([]byte(foundUser.Password), []byte(body.Password)) != nil {
 		return Render(c, http.StatusUnauthorized, auth.LoginForm(auth.LoginFormProps{
 			Email:    body.Email,
 			Password: body.Password,
@@ -87,16 +88,34 @@ func (s *Server) login(c echo.Context) error {
 		}))
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(foundUser.Password), []byte(body.Password))
+	token, err := s.CreateAccessToken(foundUser.Email, *foundUser.RoleID, foundUser.ID)
 	if err != nil {
-		return Render(c, http.StatusUnauthorized, auth.LoginForm(auth.LoginFormProps{
-			Email:    body.Email,
-			Password: body.Password,
-			Errors: map[string]string{
-				"message": "Usuario o contraseña incorrectos",
-			},
-		}))
+		return Error(c, err)
 	}
+
+	refreshToken, err := s.CreateRefreshToken(foundUser.ID)
+	if err != nil {
+		return Error(c, err)
+	}
+
+	c.SetCookie(&http.Cookie{
+		Name:     "refresh_token",
+		Value:    refreshToken,
+		Expires:  time.Now().Add(30 * 24 * time.Hour),
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteLaxMode,
+	})
+
+	slog.Info("tokens generated", "access_token", token, "refresh_token", refreshToken)
+	c.SetCookie(&http.Cookie{
+		Name:     "access_token",
+		Value:    token,
+		Expires:  time.Now().Add(12 * time.Hour),
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteLaxMode,
+	})
 
 	c.Response().Header().Set("HX-Redirect", "/")
 	return c.NoContent(http.StatusOK)

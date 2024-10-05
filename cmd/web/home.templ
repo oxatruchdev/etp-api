@@ -1,7 +1,17 @@
 package web
 
-templ Home() {
+import "github.com/Evalua-Tu-Profe/etp-api/cmd/web/components"
+
+type HomeProps struct {
+	IsAuthenticated bool
+}
+
+templ Home(props HomeProps) {
 	@Base("Evalua Tu Profe") {
-		<h1>Evalua Tu Profe</h1>
+		@components.Navbar(props.IsAuthenticated)
+		<p>
+			Honduras 
+			<span class="fi fi-gt"></span>
+		</p>
 	}
 }
