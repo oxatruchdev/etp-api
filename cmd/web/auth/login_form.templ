@@ -10,11 +10,11 @@ type LoginFormProps struct {
 
 templ LoginForm(loginForm LoginFormProps) {
 	<div id="login-form-container" class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm" hx-ext="response-targets">
-		<form class="space-y-6" hx-post="/login" hx-target-4*="#login-form-container" hx-swap="outerHTML">
+		<form class="space-y-6" hx-post="/login" hx-target-4*="#login-form-container">
 			<div>
 				<label for="email" class="block text-sm font-medium leading-6">Correo electrónico</label>
 				<div class="mt-2">
-					<input id="email" name="email" type="email" value={ loginForm.Email } autocomplete="email" required class="w-full input input-bordered"/>
+					<input id="email" name="email" type="email" value={ loginForm.Email } autocomplete="email" class="w-full input input-bordered"/>
 					if loginForm.Errors["email"] != "" {
 						<div class="mt-4 flex justify-end text-sm text-red-600 font-semibold leading-6">
 							{ loginForm.Errors["email"] }

@@ -54,20 +54,20 @@ func FromErrorStatusCode(code int) string {
 }
 
 // Render renders a templated HTML response with a status code
-func Render(w http.ResponseWriter, r *http.Request, statusCode int, t templ.Component) error {
+func Render(w http.ResponseWriter, r *http.Request, statusCode int, t templ.Component) {
 	buf := templ.GetBuffer()
 	defer templ.ReleaseBuffer(buf)
 
 	// Render the component into the buffer
 	if err := t.Render(r.Context(), buf); err != nil {
-		return err
+		slog.Error("Error rendering template", "error", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
 	// Write the HTML response
 	w.Header().Set("Content-Type", "text/html")
 	w.WriteHeader(statusCode)
-	_, err := w.Write([]byte(buf.Bytes()))
-	return err
+	_, _ = w.Write([]byte(buf.Bytes()))
 }
 
 type Session struct{}

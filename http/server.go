@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/Evalua-Tu-Profe/etp-api"
+	"github.com/Evalua-Tu-Profe/etp-api/cmd/web"
 )
 
 type Server struct {
@@ -34,8 +35,8 @@ func NewServer() *Server {
 	}
 
 	// Registering static assets
-	fileServer := http.FileServer(http.Dir("./cmd/web/assets"))
-	s.Mux.Handle("GET /assets/", http.StripPrefix("/assets/", fileServer))
+	fileServer := http.FileServer(http.FS(web.Files))
+	s.Mux.Handle("GET /assets/", fileServer)
 
 	{
 		s.registerAuthRoutes()
