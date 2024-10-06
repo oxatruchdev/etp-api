@@ -1,104 +1,132 @@
 package http
 
 import (
+	"encoding/json"
 	"log/slog"
 	"net/http"
 	"time"
 
 	"github.com/Evalua-Tu-Profe/etp-api"
 	"github.com/Evalua-Tu-Profe/etp-api/cmd/web/auth"
-	"github.com/labstack/echo/v4"
 	"golang.org/x/crypto/bcrypt"
 )
 
+// RegisterAuthRoutes registers the authentication routes
 func (s *Server) registerAuthRoutes() {
-	s.Echo.GET("/register", s.register)
-	s.Echo.POST("/register", s.createUser)
-
-	s.Echo.GET("/login", s.HandleLogin)
-	s.Echo.POST("/login", s.login)
+	// Use standard http.HandleFunc for routing
+	http.HandleFunc("GET /register", s.register)
+	http.HandleFunc("POST /register", s.createUser)
+	http.HandleFunc("GET /login", s.HandleLogin)
+	http.HandleFunc("POST /login", s.login)
 }
 
-func (s *Server) register(c echo.Context) error {
-	return Render(c, http.StatusOK, auth.Register(auth.RegisterFormProps{
+// register renders the registration page
+func (s *Server) register(w http.ResponseWriter, r *http.Request) {
+	Render(w, r, http.StatusOK, auth.Register(auth.RegisterFormProps{
 		Errors: make(map[string]string),
 	}))
 }
 
-func (s *Server) createUser(c echo.Context) error {
-	c.Logger().Info("Registering user")
+// createUser handles the registration process
+func (s *Server) createUser(w http.ResponseWriter, r *http.Request) {
+	slog.Info("Registering user")
+
+	// Parse the request body
 	var user etp.User
-	if err := c.Bind(&user); err != nil {
-		slog.Info("Error getting schools", "error", err)
-		return Error(c, etp.Errorf(etp.EINVALID, "invalid body"))
+	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+		slog.Info("Error parsing user data", "error", err)
+		Error(w, r, etp.Errorf(etp.EINVALID, "invalid body"))
+		return
 	}
 
-	userFound, err := s.UserService.GetUserByEmail(c.Request().Context(), user.Email)
+	// Check if the user already exists
+	userFound, err := s.UserService.GetUserByEmail(r.Context(), user.Email)
 	if err != nil {
-		return Render(c, http.StatusInternalServerError, auth.RegisterForm(auth.RegisterFormProps{
+		Render(w, r, http.StatusInternalServerError, auth.RegisterForm(auth.RegisterFormProps{
 			Email:    user.Email,
 			Password: user.Password,
 			Errors:   map[string]string{"message": "Error al registrar usuario, intenta más tarde."},
 		}))
+		return
 	}
 
 	if userFound != nil {
-		return Render(c, http.StatusConflict, auth.RegisterForm(auth.RegisterFormProps{
+		Render(w, r, http.StatusConflict, auth.RegisterForm(auth.RegisterFormProps{
 			Email:    user.Email,
 			Password: user.Password,
 			Errors:   map[string]string{"message": "Este correo ya está en uso, intenta con otro"},
 		}))
+		return
 	}
 
-	if err := s.UserService.RegisterUser(c.Request().Context(), &etp.User{
+	// Get the student role
+	studentRole, err := s.RoleService.GetRoleByName(r.Context(), etp.RoleStudent)
+	if err != nil {
+		slog.Error("Error getting student role", "error", err)
+		Error(w, r, err)
+		return
+	}
+
+	// Register the user
+	if err := s.UserService.RegisterUser(r.Context(), &etp.User{
 		Email:    user.Email,
 		Password: user.Password,
+		RoleID:   &studentRole.ID,
 	}); err != nil {
-		c.Logger().Error("error registering user", "error", err, "message", err.Error())
-		return Error(c, err)
+		slog.Error("Error registering user", "error", err)
+		Error(w, r, err)
+		return
 	}
 
-	return Render(c, http.StatusCreated, auth.SuccessfulRegistration())
+	Render(w, r, http.StatusCreated, auth.SuccessfulRegistration())
 }
 
-func (s *Server) HandleLogin(c echo.Context) error {
-	return Render(c, http.StatusOK, auth.LoginPage(auth.LoginFormProps{}))
+// HandleLogin renders the login page
+func (s *Server) HandleLogin(w http.ResponseWriter, r *http.Request) {
+	Render(w, r, http.StatusOK, auth.LoginPage(auth.LoginFormProps{}))
 }
 
-func (s *Server) login(c echo.Context) error {
-	c.Logger().Info("Logging in user")
+// login handles the user login process
+func (s *Server) login(w http.ResponseWriter, r *http.Request) {
+	slog.Info("Logging in user")
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Parse the request body
 	var body etp.User
-	if err := c.Bind(&body); err != nil {
-		return Error(c, etp.Errorf(etp.EINVALID, "invalid body"))
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		Error(w, r, etp.Errorf(etp.EINVALID, "invalid body"))
+		return
 	}
 
-	foundUser, err := s.UserService.GetUserByEmail(c.Request().Context(), body.Email)
-	if err != nil {
-		c.Logger().Error("error logging in user ", "error ", err, "message ", err.Error())
-		return Error(c, err)
-	}
-
-	if foundUser == nil || bcrypt.CompareHashAndPassword([]byte(foundUser.Password), []byte(body.Password)) != nil {
-		return Render(c, http.StatusUnauthorized, auth.LoginForm(auth.LoginFormProps{
+	// Find the user by email
+	foundUser, err := s.UserService.GetUserByEmail(r.Context(), body.Email)
+	if err != nil || foundUser == nil || bcrypt.CompareHashAndPassword([]byte(foundUser.Password), []byte(body.Password)) != nil {
+		Render(w, r, http.StatusUnauthorized, auth.LoginForm(auth.LoginFormProps{
 			Email:    body.Email,
 			Password: body.Password,
-			Errors: map[string]string{
-				"message": "Usuario o contraseña incorrectos",
-			},
+			Errors:   map[string]string{"message": "Usuario o contraseña incorrectos"},
 		}))
+		return
 	}
 
+	// Create tokens
 	token, err := s.CreateAccessToken(foundUser.Email, *foundUser.RoleID, foundUser.ID)
 	if err != nil {
-		return Error(c, err)
+		Error(w, r, err)
+		return
 	}
 
 	refreshToken, err := s.CreateRefreshToken(foundUser.ID)
 	if err != nil {
-		return Error(c, err)
+		Error(w, r, err)
+		return
 	}
 
-	c.SetCookie(&http.Cookie{
+	// Set cookies
+	http.SetCookie(w, &http.Cookie{
 		Name:     "refresh_token",
 		Value:    refreshToken,
 		Expires:  time.Now().Add(30 * 24 * time.Hour),
@@ -107,8 +135,7 @@ func (s *Server) login(c echo.Context) error {
 		SameSite: http.SameSiteLaxMode,
 	})
 
-	slog.Info("tokens generated", "access_token", token, "refresh_token", refreshToken)
-	c.SetCookie(&http.Cookie{
+	http.SetCookie(w, &http.Cookie{
 		Name:     "access_token",
 		Value:    token,
 		Expires:  time.Now().Add(12 * time.Hour),
@@ -117,6 +144,6 @@ func (s *Server) login(c echo.Context) error {
 		SameSite: http.SameSiteLaxMode,
 	})
 
-	c.Response().Header().Set("HX-Redirect", "/")
-	return c.NoContent(http.StatusOK)
+	// Redirect or return success
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }

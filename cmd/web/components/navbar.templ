@@ -1,5 +1,17 @@
 package components
 
+import "context"
+
+func getAuth(ctx context.Context) bool {
+	if isAuth, ok := ctx.Value("isAuthenticated").(bool); ok{
+		if isAuth == true {
+			return true
+		}
+		return false
+	}
+	return false
+}
+
 templ Navbar(isAuthenticated bool) {
 	<div class="navbar bg-base-100">
 		<div class="navbar-start">
@@ -28,10 +40,15 @@ templ Navbar(isAuthenticated bool) {
 			</form>
 		</div>
 		<div class="navbar-end">
+			if getAuth(ctx) {
+				<p>hello</p>
+			}else{
+				<p>not authenticated</p>
+			}
 			<div class="dropdown dropdown-end">
 				<div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">
 					<div class="w-10 rounded-full">
-						<img src="https://placeimg.com/80/80/people"/>
+						<img src={"https://ui-avatars.com/api/?name=" + "oscar" + "&background=random"}/>
 					</div>
 				</div>
 				<ul
@@ -44,7 +61,7 @@ templ Navbar(isAuthenticated bool) {
 					<li><a>Settings</a></li>
 					<li><a>Logout</a></li>
 				</ul>
-			</div>
+			</div>	
 		</div>
 	</div>
 }

@@ -12,11 +12,11 @@ templ LoginForm(loginForm LoginFormProps) {
 	<div id="login-form-container" class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm" hx-ext="response-targets">
 		<form class="space-y-6" hx-post="/login" hx-target-4*="#login-form-container" hx-swap="outerHTML">
 			<div>
-				<label for="email" class="block text-sm font-medium leading-6 text-gray-900">Correo electrónico</label>
+				<label for="email" class="block text-sm font-medium leading-6">Correo electrónico</label>
 				<div class="mt-2">
-					<input id="email" name="email" type="email" value={ loginForm.Email } autocomplete="email" required class="block w-full rounded-md border-0 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"/>
+					<input id="email" name="email" type="email" value={ loginForm.Email } autocomplete="email" required class="w-full input input-bordered"/>
 					if loginForm.Errors["email"] != "" {
-						<div class="mt-4 flex justify-end text-sm text-red-600 font-semibold leading-6 text-gray-900">
+						<div class="mt-4 flex justify-end text-sm text-red-600 font-semibold leading-6">
 							{ loginForm.Errors["email"] }
 						</div>
 					}
@@ -24,16 +24,16 @@ templ LoginForm(loginForm LoginFormProps) {
 			</div>
 			<div>
 				<div class="flex items-center justify-between">
-					<label for="password" class="block text-sm font-medium leading-6 text-gray-900">Contraseña</label>
+					<label for="password" class="block text-sm leading-6 font-semibold">Contraseña</label>
 					<div class="text-sm">
-						<a href="#" class="font-semibold text-indigo-600 hover:text-indigo-500">¿Olvidate tu contraseña?</a>
+						<a href="#" class="link link-primary font-semibold">¿Olvidate tu contraseña?</a>
 					</div>
 				</div>
 				<div class="mt-2">
-					<input id="password" name="password" minlength="8" type="password" value={ loginForm.Password } required class="block w-full rounded-md border-0 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"/>
+					<input id="password" name="password" minlength="8" type="password" value={ loginForm.Password } required class="w-full input input-bordered"/>
 				</div>
 				if loginForm.Errors["password"] != "" {
-					<div class="mt-4 flex justify-end text-sm text-red-600 font-semibold leading-6 text-gray-900">
+					<div class="mt-4 flex justify-end text-sm text-red-600 font-semibold leading-6">
 						{ loginForm.Errors["password"] }
 					</div>
 				}
@@ -41,14 +41,14 @@ templ LoginForm(loginForm LoginFormProps) {
 			<div>
 				<div class="flex items-left justify-end">
 					<div class="text-sm">
-						¿No tienes una cuenta? <a href="/register" class="link link-primary">Crea una cuenta</a>
+						¿No tienes una cuenta? <a href="/register" class="link link-primary font-semibold">Crea una cuenta</a>
 					</div>
 				</div>
 			</div>
 			<div>
 				<button type="submit" class="flex w-full btn btn-primary btn-m">
 					Iniciar sesión
-					<div class="ml-2 htmx-indicator " role="status">
+					<div class="ml-2 htmx-indicator" role="status">
 						<span class="loading loading-spinner loading-sm"></span>
 					</div>
 				</button>

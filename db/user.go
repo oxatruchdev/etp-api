@@ -97,14 +97,15 @@ func createUser(ctx context.Context, tx pgx.Tx, user *etp.User) error {
 
 	query := `
 		INSERT INTO "user"
-		(email, password)
+		(email, password, role_id)
 		VALUES
-		(@email, @password)
+		(@email, @password, @role_id)
 	`
 
 	args := pgx.NamedArgs{
 		"email":    user.Email,
 		"password": user.Password,
+		"role_id":  user.RoleID,
 	}
 
 	slog.Info("Inserting user", "query", query, "args", args)

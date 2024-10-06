@@ -1,77 +1,83 @@
 package http
 
-import (
-	"net/http"
-	"strconv"
-
-	"github.com/Evalua-Tu-Profe/etp-api"
-	"github.com/labstack/echo/v4"
-)
-
 func (s *Server) registerCountryRoutes() {
-	s.Echo.GET("/country", s.getCountries)
-	s.Echo.GET("/country/:id", s.getCountry)
-	s.Echo.POST("/country", s.createCountry)
-	s.Echo.PUT("/country/:id", s.updateCountry)
 }
 
-func (s *Server) getCountries(c echo.Context) error {
-	var filter etp.CountryFilter
-	if err := c.Bind(&filter); err != nil {
-		return Error(c, etp.Errorf(etp.EINVALID, "invalid body"))
-	}
-
-	countries, n, err := s.CountryService.GetCountries(c.Request().Context(), filter)
-	if err != nil {
-		return Error(c, err)
-	}
-
-	return c.JSON(200, echo.Map{"countries": countries, "count": n})
-}
-
-func (s *Server) getCountry(c echo.Context) error {
-	id, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		return Error(c, etp.Errorf(etp.EINVALID, "invalid id"))
-	}
-
-	country, err := s.CountryService.GetCountryById(c.Request().Context(), id)
-	if err != nil {
-		return Error(c, err)
-	}
-
-	return c.JSON(200, country)
-}
-
-func (s *Server) createCountry(c echo.Context) error {
-	var country etp.Country
-
-	if err := c.Bind(&country); err != nil {
-		return Error(c, etp.Errorf(etp.EINVALID, "invalid body"))
-	}
-
-	if err := s.CountryService.CreateCountry(c.Request().Context(), &country); err != nil {
-		return Error(c, err)
-	}
-
-	return c.NoContent(http.StatusCreated)
-}
-
-func (s *Server) updateCountry(c echo.Context) error {
-	var updCountry etp.CountryUpdate
-	if err := c.Bind(&updCountry); err != nil {
-		return Error(c, etp.Errorf(etp.EINVALID, "invalid body"))
-	}
-
-	id, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		return Error(c, etp.Errorf(etp.EINVALID, "invalid id"))
-	}
-
-	updatedCountry, err := s.CountryService.UpdateCountry(c.Request().Context(), id, &updCountry)
-	if err != nil {
-		return Error(c, err)
-	}
-
-	return c.JSON(200, updatedCountry)
-}
+// func (s *Server) apiGetCountries(w http.ResponseWriter, r *http.Request) error {
+// 	// Parsing filter parameters from request (use a helper method if needed)
+// 	var filter etp.CountryFilter
+// 	if err := Bind(r, &filter); err != nil {
+// 		return Error(w, etp.Errorf(etp.EINVALID, "invalid body"))
+// 	}
+//
+// 	// Fetch countries from the service layer
+// 	countries, count, err := s.CountryService.GetCountries(r.Context(), filter)
+// 	if err != nil {
+// 		return Error(w, err)
+// 	}
+//
+// 	// Return JSON response
+// 	return JSON(w, http.StatusOK, map[string]interface{}{
+// 		"countries": countries,
+// 		"count":     count,
+// 	})
+// }
+//
+// func (s *Server) apiGetCountry(w http.ResponseWriter, r *http.Request) error {
+// 	// Parse country ID from URL path
+// 	idStr := Param(r, "id")
+// 	id, err := strconv.Atoi(idStr)
+// 	if err != nil {
+// 		return Error(w, etp.Errorf(etp.EINVALID, "invalid id"))
+// 	}
+//
+// 	// Fetch the country by ID from the service layer
+// 	country, err := s.CountryService.GetCountryById(r.Context(), id)
+// 	if err != nil {
+// 		return Error(w, err)
+// 	}
+//
+// 	// Return country information in JSON
+// 	return JSON(w, http.StatusOK, country)
+// }
+//
+// func (s *Server) apiCreateCountry(w http.ResponseWriter, r *http.Request) error {
+// 	// Parse the new country data from request body
+// 	var country etp.Country
+// 	if err := Bind(r, &country); err != nil {
+// 		return Error(w, etp.Errorf(etp.EINVALID, "invalid body"))
+// 	}
+//
+// 	// Call the service layer to create the new country
+// 	if err := s.CountryService.CreateCountry(r.Context(), &country); err != nil {
+// 		return Error(w, err)
+// 	}
+//
+// 	// Return 201 Created status without a body
+// 	return NoContent(w, http.StatusCreated)
+// }
+//
+// func (s *Server) apiUpdateCountry(w http.ResponseWriter, r *http.Request) {
+// 	// Parse country ID from URL path
+// 	idStr := Param(r, "id")
+// 	id, err := strconv.Atoi(idStr)
+// 	if err != nil {
+// 		return Error(w, etp.Errorf(etp.EINVALID, "invalid id"))
+// 	}
+//
+// 	// Parse the update data from request body
+// 	var updCountry etp.CountryUpdate
+// 	if err := Bind(r, &updCountry); err != nil {
+// 		Error(w, r, etp.Errorf(etp.EINVALID, "invalid body"))
+// 		return
+// 	}
+//
+// 	// Call the service layer to update the country
+// 	updatedCountry, err := s.CountryService.UpdateCountry(r.Context(), id, &updCountry)
+// 	if err != nil {
+// 		return Error(w, err)
+// 	}
+//
+// 	// Return the updated country information in JSON
+// 	return JSON(w, http.StatusOK, updatedCountry)
+// }

@@ -7,15 +7,16 @@ import (
 
 const (
 	RoleAdmin       = "admin"
-	RoleUser        = "user"
+	RoleStudent     = "student"
 	RolaModerator   = "moderator"
 	RoleSchoolAdmin = "school_admin"
 	RoleProfessor   = "professor"
 )
 
 type Role struct {
-	ID   int    `json:"id" db:"id"`
-	Name string `json:"name" db:"name"`
+	ID          int    `json:"id" db:"id"`
+	Name        string `json:"name" db:"name"`
+	DisplayName string `json:"displayName" db:"display_name"`
 
 	CreatedAt time.Time `json:"createdAt" db:"created_at"`
 	UpdatedAt time.Time `json:"updatedAt" db:"updated_at"`

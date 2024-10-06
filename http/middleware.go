@@ -12,6 +12,7 @@ func (s *Server) AuthMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 		if err != nil {
 			// User not authenticated
 			c.Set("isAuthenticated", false)
+
 			return next(c)
 		}
 
@@ -26,6 +27,7 @@ func (s *Server) AuthMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 		// User is authenticated, set user info
 		c.Set("user", claims.Email)
 		c.Set("isAuthenticated", true)
+
 		return next(c)
 	}
 }

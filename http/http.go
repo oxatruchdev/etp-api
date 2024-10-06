@@ -1,23 +1,31 @@
 package http
 
 import (
+	"encoding/json"
 	"log/slog"
 	"net/http"
 
 	"github.com/Evalua-Tu-Profe/etp-api"
 	"github.com/a-h/templ"
-	"github.com/labstack/echo/v4"
 )
 
-func Error(c echo.Context, err error) error {
+type HTTPError struct {
+	Code    string `json:"code"`
+	Message string `json:"message"`
+}
+
+// Error handles errors by writing the appropriate HTTP status and JSON response
+func Error(w http.ResponseWriter, r *http.Request, err error) {
 	code, message := etp.ErrorCode(err), etp.ErrorMessage(err)
 
 	slog.Error(message, "error", err, "code", code)
 
-	return c.JSON(ErrorStatusCode(code), echo.Map{"code": code, "message": message})
+	w.WriteHeader(ErrorStatusCode(code))
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(HTTPError{Code: code, Message: message})
 }
 
-// lookup of application error codes to HTTP status codes.
+// lookup of application error codes to HTTP status codes
 var codes = map[string]int{
 	etp.ECONFLICT:       http.StatusConflict,
 	etp.EINVALID:        http.StatusBadRequest,
@@ -27,7 +35,7 @@ var codes = map[string]int{
 	etp.EINTERNAL:       http.StatusInternalServerError,
 }
 
-// ErrorStatusCode returns the associated HTTP status code for a etp error code.
+// ErrorStatusCode returns the associated HTTP status code for a given `etp` error code
 func ErrorStatusCode(code string) int {
 	if v, ok := codes[code]; ok {
 		return v
@@ -35,7 +43,7 @@ func ErrorStatusCode(code string) int {
 	return http.StatusInternalServerError
 }
 
-// FromErrorStatusCode returns the associated etp code for an HTTP status code.
+// FromErrorStatusCode returns the associated etp code for an HTTP status code
 func FromErrorStatusCode(code int) string {
 	for k, v := range codes {
 		if v == code {
@@ -45,15 +53,21 @@ func FromErrorStatusCode(code int) string {
 	return etp.EINTERNAL
 }
 
-func Render(ctx echo.Context, statusCode int, t templ.Component) error {
+// Render renders a templated HTML response with a status code
+func Render(w http.ResponseWriter, r *http.Request, statusCode int, t templ.Component) error {
 	buf := templ.GetBuffer()
 	defer templ.ReleaseBuffer(buf)
 
-	if err := t.Render(ctx.Request().Context(), buf); err != nil {
+	// Render the component into the buffer
+	if err := t.Render(r.Context(), buf); err != nil {
 		return err
 	}
 
-	return ctx.HTML(statusCode, buf.String())
+	// Write the HTML response
+	w.Header().Set("Content-Type", "text/html")
+	w.WriteHeader(statusCode)
+	_, err := w.Write([]byte(buf.Bytes()))
+	return err
 }
 
 type Session struct{}

@@ -53,9 +53,9 @@ INSERT INTO professor_department (professor_id, department_id) VALUES
 (3, 3);
 
 -- Seed data for role table
-INSERT INTO role (name) VALUES
-('Student'),
-('Professor'),
-('Moderator'),
-('School Administrator'),
-('Admin');
+INSERT INTO role (name, display_name) VALUES
+('student', 'Estudiante'),
+('professor', 'Profesor'),
+('moderator', 'Moderador'),
+('school_admin', 'Administrador de Escuela'),
+('admin', 'Administrador');

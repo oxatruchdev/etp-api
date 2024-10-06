@@ -2,17 +2,15 @@ package http
 
 import (
 	"fmt"
-	"log/slog"
 	"net/http"
+	"time"
 
 	"github.com/Evalua-Tu-Profe/etp-api"
-	"github.com/Evalua-Tu-Profe/etp-api/cmd/web"
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 )
 
 type Server struct {
-	Echo *echo.Echo
+	Mux    *http.ServeMux
+	Server *http.Server
 
 	// Services this server will use
 	CountryService         etp.CountryService
@@ -29,39 +27,36 @@ type Server struct {
 }
 
 func NewServer() *Server {
-	e := echo.New()
-	e.Use(middleware.Logger())
-	e.Use(middleware.Recover())
-
-	// Caching static files
-	fileServer := http.FileServer(http.FS(web.Files))
-	e.GET("/assets/css/*", echo.WrapHandler(fileServer))
-	e.GET("/assets/*", func(c echo.Context) error {
-		c.Response().Header().Set("Cache-Control", "max-age=31536000, public")
-		fileServer.ServeHTTP(c.Response(), c.Request())
-		return nil
-	})
-
 	s := &Server{
-		Echo: e,
+		Mux:    http.NewServeMux(),
+		Server: &http.Server{},
+		Config: etp.NewConfig(),
 	}
 
-	slog.Info("Registering routes")
+	// Registering static assets
+	fileServer := http.FileServer(http.Dir("./cmd/web/assets"))
+	s.Mux.Handle("GET /assets/", http.StripPrefix("/assets/", fileServer))
+
 	{
-		s.registerCountryRoutes()
-		s.registerDepartmentRoutes()
-		s.registerSchoolRoutes()
-		s.registerCourseRoutes()
-		s.registerProfessorRoutes()
-		s.registerProfessorRatingRoutes()
 		s.registerAuthRoutes()
 		s.registerHomeRoutes()
-		s.registerSearchRoutes()
+	}
+
+	s.Server = &http.Server{
+		Addr:           ":8080", // You can update this dynamically in `Start`
+		Handler:        s.Mux,
+		ReadTimeout:    10 * time.Second,
+		WriteTimeout:   10 * time.Second,
+		MaxHeaderBytes: 1 << 20, // 1 MB
 	}
 
 	return s
 }
 
 func (s *Server) Start(port int) error {
-	return s.Echo.Start(fmt.Sprintf(":%d", port))
+	// Update the address dynamically based on the port provided
+	s.Server.Addr = fmt.Sprintf(":%d", port)
+
+	fmt.Printf("Starting server on port %d...\n", port)
+	return s.Server.ListenAndServe()
 }
