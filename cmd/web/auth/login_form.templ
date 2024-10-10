@@ -9,53 +9,51 @@ type LoginFormProps struct {
 }
 
 templ LoginForm(loginForm LoginFormProps) {
-	<div id="login-form-container" class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm" hx-ext="response-targets">
-		<form class="space-y-6" hx-post="/login" hx-target-4*="#login-form-container">
-			<div>
-				<label for="email" class="block text-sm font-medium leading-6">Correo electrónico</label>
-				<div class="mt-2">
-					<input id="email" name="email" type="email" value={ loginForm.Email } autocomplete="email" class="w-full input input-bordered"/>
-					if loginForm.Errors["email"] != "" {
-						<div class="mt-4 flex justify-end text-sm text-red-600 font-semibold leading-6">
-							{ loginForm.Errors["email"] }
-						</div>
-					}
-				</div>
-			</div>
-			<div>
-				<div class="flex items-center justify-between">
-					<label for="password" class="block text-sm leading-6 font-semibold">Contraseña</label>
-					<div class="text-sm">
-						<a href="#" class="link link-primary font-semibold">¿Olvidate tu contraseña?</a>
-					</div>
-				</div>
-				<div class="mt-2">
-					<input id="password" name="password" minlength="8" type="password" value={ loginForm.Password } required class="w-full input input-bordered"/>
-				</div>
-				if loginForm.Errors["password"] != "" {
+	<form class="space-y-6" hx-post="/login" hx-target-4*="#login-form-container">
+		<div>
+			<label for="email" class="block text-sm font-medium leading-6">Correo electrónico</label>
+			<div class="mt-2">
+				<input id="email" name="email" type="email" value={ loginForm.Email } autocomplete="email" class="w-full input input-bordered"/>
+				if loginForm.Errors["email"] != "" {
 					<div class="mt-4 flex justify-end text-sm text-red-600 font-semibold leading-6">
-						{ loginForm.Errors["password"] }
+						{ loginForm.Errors["email"] }
 					</div>
 				}
 			</div>
-			<div>
-				<div class="flex items-left justify-end">
-					<div class="text-sm">
-						¿No tienes una cuenta? <a href="/register" class="link link-primary font-semibold">Crea una cuenta</a>
-					</div>
+		</div>
+		<div>
+			<div class="flex items-center justify-between">
+				<label for="password" class="block text-sm leading-6 font-semibold">Contraseña</label>
+				<div class="text-sm">
+					<a href="#" class="link link-primary font-semibold">¿Olvidate tu contraseña?</a>
 				</div>
 			</div>
-			<div>
-				<button type="submit" class="flex w-full btn btn-primary btn-m">
-					Iniciar sesión
-					<div class="ml-2 htmx-indicator" role="status">
-						<span class="loading loading-spinner loading-sm"></span>
-					</div>
-				</button>
+			<div class="mt-2">
+				<input id="password" name="password" minlength="8" type="password" value={ loginForm.Password } required class="w-full input input-bordered"/>
 			</div>
-			if loginForm.Errors["message"] != "" {
-				@components.Alert("alert-error", loginForm.Errors["message"])
+			if loginForm.Errors["password"] != "" {
+				<div class="mt-4 flex justify-end text-sm text-red-600 font-semibold leading-6">
+					{ loginForm.Errors["password"] }
+				</div>
 			}
-		</form>
-	</div>
+		</div>
+		<div>
+			<div class="flex items-left justify-end">
+				<div class="text-sm">
+					¿No tienes una cuenta? <a href="/register" class="link link-primary font-semibold">Crea una cuenta</a>
+				</div>
+			</div>
+		</div>
+		<div>
+			<button type="submit" class="flex w-full btn btn-primary btn-m">
+				Iniciar sesión
+				<div class="ml-2 htmx-indicator" role="status">
+					<span class="loading loading-spinner loading-sm"></span>
+				</div>
+			</button>
+		</div>
+		if loginForm.Errors["message"] != "" {
+			@components.Alert("alert-error", loginForm.Errors["message"])
+		}
+	</form>
 }

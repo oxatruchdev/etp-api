@@ -9,11 +9,14 @@ type RegisterFormProps struct {
 }
 
 templ RegisterForm(registerForm RegisterFormProps) {
-	<form class="space-y-6" hx-post="/register" hx-target-4*="this" hx-swap="outerHTML">
+	<form class="space-y-6" hx-post="/register" hx-target="#register-form" hx-target-4x="this" hx-swap="outerHTML">
 		<div>
 			<label for="email" class="block text-sm leading-6 font-semibold">Correo electrónico</label>
 			<div class="mt-2">
 				<input id="email" required value={ registerForm.Email } name="email" type="email" autocomplete="email" required class="input input-bordered w-full"/>
+				if registerForm.Errors["email"] != "" {
+					<p class="mt-2 text-sm text-red-500">{ registerForm.Errors["password"] }</p>
+				}
 			</div>
 		</div>
 		<div>
@@ -21,7 +24,10 @@ templ RegisterForm(registerForm RegisterFormProps) {
 				<label for="password" required class="block text-sm font-semibold leading-6">Contraseña</label>
 			</div>
 			<div class="mt-2">
-				<input id="password" required name="password" value={ registerForm.Password } type="password" autocomplete="current-password" required class="input input-bordered w-full"/>
+				<input id="password" minlength="8" required name="password" value={ registerForm.Password } type="password" autocomplete="current-password" required class="input input-bordered w-full"/>
+				if registerForm.Errors["password"] != "" {
+					<p class="mt-2 text-sm text-red-500">{ registerForm.Errors["password"] }</p>
+				}
 			</div>
 		</div>
 		<div>
@@ -40,7 +46,7 @@ templ RegisterForm(registerForm RegisterFormProps) {
 			</button>
 		</div>
 		if registerForm.Errors["message"] != "" {
-			@components.Alert("error", registerForm.Errors["message"])
+			@components.Alert("alert-error", registerForm.Errors["message"])
 		}
 	</form>
 }
