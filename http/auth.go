@@ -7,6 +7,8 @@ import (
 
 	"github.com/Evalua-Tu-Profe/etp-api"
 	"github.com/Evalua-Tu-Profe/etp-api/cmd/web/auth"
+	"github.com/Evalua-Tu-Profe/etp-api/jwt"
+	"github.com/Evalua-Tu-Profe/etp-api/middleware"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -17,10 +19,20 @@ func (s *Server) registerAuthRoutes() {
 	s.Mux.HandleFunc("POST /register", s.createUser)
 	s.Mux.HandleFunc("GET /login", s.HandleLogin)
 	s.Mux.HandleFunc("POST /login", s.login)
+	s.Mux.HandleFunc("POST /logout", s.logout)
 }
 
 // register renders the registration page
 func (s *Server) register(w http.ResponseWriter, r *http.Request) {
+	slog.Info("Registering user")
+	ctx := r.Context()
+	isAuth := ctx.Value(middleware.IsAuthKey)
+
+	if isAuth == true {
+		http.Redirect(w, r, "/", http.StatusFound)
+		return
+	}
+	slog.Info("Is auth", "isAuth", isAuth)
 	Render(w, r, http.StatusOK, auth.Register(auth.RegisterFormProps{
 		Errors: make(map[string]string),
 	}))
@@ -105,11 +117,20 @@ func (s *Server) createUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Set("HX-Reswap", "innerHTML")
 	Render(w, r, http.StatusCreated, auth.SuccessfulRegistration())
 }
 
 // HandleLogin renders the login page
 func (s *Server) HandleLogin(w http.ResponseWriter, r *http.Request) {
+	slog.Info("Rendering login page")
+	ctx := r.Context()
+	isAuth := ctx.Value(middleware.IsAuthKey)
+
+	if isAuth == true {
+		http.Redirect(w, r, "/", http.StatusFound)
+		return
+	}
 	Render(w, r, http.StatusOK, auth.LoginPage(auth.LoginFormProps{}))
 }
 
@@ -163,13 +184,13 @@ func (s *Server) login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create tokens
-	token, err := s.CreateAccessToken(foundUser.Email, *foundUser.RoleID, foundUser.ID)
+	token, err := jwt.CreateAccessToken(foundUser.Email, *foundUser.RoleID, foundUser.ID)
 	if err != nil {
 		Error(w, r, err)
 		return
 	}
 
-	refreshToken, err := s.CreateRefreshToken(foundUser.ID)
+	refreshToken, err := jwt.CreateRefreshToken(foundUser.ID)
 	if err != nil {
 		Error(w, r, err)
 		return
@@ -195,5 +216,25 @@ func (s *Server) login(w http.ResponseWriter, r *http.Request) {
 	})
 
 	// Redirect or return success
+	w.Header().Set("HX-Redirect", "/")
+}
+
+func (s *Server) logout(w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     "refresh_token",
+		Value:    "",
+		Expires:  time.Now(),
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteLaxMode,
+	})
+	http.SetCookie(w, &http.Cookie{
+		Name:     "access_token",
+		Value:    "",
+		Expires:  time.Now(),
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteLaxMode,
+	})
 	w.Header().Set("HX-Redirect", "/")
 }

@@ -2,11 +2,13 @@ package http
 
 import (
 	"fmt"
+	"log/slog"
 	"net/http"
 	"time"
 
 	"github.com/Evalua-Tu-Profe/etp-api"
 	"github.com/Evalua-Tu-Profe/etp-api/cmd/web"
+	"github.com/Evalua-Tu-Profe/etp-api/middleware"
 )
 
 type Server struct {
@@ -43,9 +45,12 @@ func NewServer() *Server {
 		s.registerHomeRoutes()
 	}
 
+	slog.Info("Creating middleware stack")
+	stack := middleware.CreateStack(middleware.Logging, middleware.AuthOptional)
+
 	s.Server = &http.Server{
 		Addr:           ":8080", // You can update this dynamically in `Start`
-		Handler:        s.Mux,
+		Handler:        stack(s.Mux),
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
 		MaxHeaderBytes: 1 << 20, // 1 MB
