@@ -1,19 +1,31 @@
 package components
 
 import "context"
+import "github.com/Evalua-Tu-Profe/etp-api/middleware"
+import "github.com/Evalua-Tu-Profe/etp-api/jwt"
+import "log/slog"
 
 func getAuth(ctx context.Context) bool {
-	if isAuth, ok := ctx.Value("isAuthenticated").(bool); ok{
-		if isAuth == true {
-			return true
-		}
-		return false
+	isAuth := ctx.Value(middleware.IsAuthKey)
+	if isAuth == true {
+		return true
 	}
 	return false
 }
 
+func getEmail(ctx context.Context) string {
+	// Extract *jwt.Claims from the context
+	claims, ok := ctx.Value(middleware.ClaimsKey).(*jwt.Claims)
+	if !ok {
+		slog.Info("Claims not found or incorrect type in context")
+		return ""
+	}
+
+	return claims.Email
+}
+
 templ Navbar(isAuthenticated bool) {
-	<div class="navbar bg-base-100">
+	<div class="navbar bg-base-100 shadow py-4 px-4">
 		<div class="navbar-start">
 			<a class="btn btn-ghost text-xl">Evalua Tu Profe</a>
 		</div>
@@ -41,27 +53,33 @@ templ Navbar(isAuthenticated bool) {
 		</div>
 		<div class="navbar-end">
 			if getAuth(ctx) {
-				<p>hello</p>
-			}else{
-				<p>not authenticated</p>
-			}
-			<div class="dropdown dropdown-end">
-				<div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">
-					<div class="w-10 rounded-full">
-						<img src={"https://ui-avatars.com/api/?name=" + "oscar" + "&background=random"}/>
+				<div class="dropdown dropdown-end">
+					<div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">
+						<div class="w-10 rounded-full">
+							<img src={ "https://ui-avatars.com/api/?name=" + getEmail(ctx) + "&background=random" }/>
+						</div>
 					</div>
+					<ul
+						tabindex="0"
+						class="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-48 p-2 shadow"
+					>
+						<li>
+							<a role="button">Profile</a>
+						</li>
+						<li><a>Settings</a></li>
+						<li><a role="button" hx-trigger="click" hx-post="/logout">Logout</a></li>
+					</ul>
 				</div>
-				<ul
-					tabindex="0"
-					class="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-48 p-2 shadow"
-				>
-					<li>
-						<a>Profile</a>
-					</li>
-					<li><a>Settings</a></li>
-					<li><a>Logout</a></li>
-				</ul>
-			</div>	
+			} else {
+				<div class="flex gap-2">
+					<a class="btn btn-primary" href="/login">
+						Iniciar Sesión
+					</a>
+					<a class="btn btn-accent" href="/register">
+						Registrarse
+					</a>
+				</div>
+			}
 		</div>
 	</div>
 }
