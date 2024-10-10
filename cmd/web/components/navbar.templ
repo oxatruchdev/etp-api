@@ -32,22 +32,13 @@ templ Navbar(isAuthenticated bool) {
 		<div class="navbar-center">
 			<form class="flex items-center" hx-post="/search" hx-target="#search-results">
 				<select name="type" class="select select-bordered select-md">
-					<option disabled selected>Choose</option>
+					<option disabled selected>Profesor o Universidad</option>
 					<option value="school">Universidad</option>
 					<option value="professor">Profesor</option>
 				</select>
-				<div class="dropdown dropdown-end">
-					<input type="text" name="search" placeholder="Buscar" class="input ml-2 input-bordered w-full max-w-xs"/>
-					<ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow">
-						<li>
-							<div class="flex flex-col align-start">
-								<a class="hover:underline flex-start" href="#">Test</a>
-								<p class="text-sm flex-start">
-									<span class="fi fi-gt"></span>
-								</p>
-							</div>
-						</li>
-					</ul>
+				<div class="dropdown dropdown-start">
+					<input type="text" name="search" hx-swap="outerHTML" hx-target="#search-results" hx-trigger="keyup changed delay:200ms" hx-post="/search" placeholder="Buscar" class="input ml-2 input-bordered w-full max-w-xs"/>
+					<ul tabindex="0" id="search-results" class="hidden dropdown-content menu bg-base-100 rounded-box z-[1] w-auto p-2 shadow"></ul>
 				</div>
 			</form>
 		</div>

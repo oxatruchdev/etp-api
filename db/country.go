@@ -112,7 +112,8 @@ func getCountries(ctx context.Context, tx *Tx, filter etp.CountryFilter) ([]*etp
 			abbreviation,
 			additional_fields,
 			created_at,
-			updated_at
+			updated_at,
+			flag_code
 		from country 
 		where ` + strings.Join(where, " and ") + `
 		order by id	

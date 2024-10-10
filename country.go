@@ -13,6 +13,7 @@ type Country struct {
 	Name             string `json:"name"`
 	Abbreviation     string `json:"abbreviation"`
 	AdditionalFields any    `json:"additionalFields" db:"additional_fields"`
+	FlagCode         string `json:"flag" db:"flag_code"`
 
 	// Relations
 	Schools []*School `json:"schools omitempty" db:"-"`

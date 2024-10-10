@@ -191,6 +191,11 @@ func getSchoolById(ctx context.Context, tx *Tx, id int) (*etp.School, error) {
 func getSchools(ctx context.Context, tx *Tx, filter etp.SchoolFilter) ([]*etp.School, int, error) {
 	where, args := []string{"1 = 1"}, pgx.NamedArgs{}
 
+	if filter.SchoolName != nil {
+		where = append(where, "unaccent(name) ilike @name")
+		args["name"] = "%" + *filter.SchoolName + "%"
+	}
+
 	if filter.CountryID != nil {
 		where = append(where, "country_id = @countryId")
 		args["countryId"] = *filter.CountryID

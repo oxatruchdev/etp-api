@@ -155,6 +155,11 @@ func getProfessorById(ctx context.Context, tx *Tx, id int) (*etp.Professor, erro
 func getProfessors(ctx context.Context, tx *Tx, filter *etp.ProfessorFilter) ([]*etp.Professor, int, error) {
 	where, args := []string{"1 = 1"}, pgx.NamedArgs{}
 
+	if filter.Name != nil {
+		where = append(where, "unaccent(first_name) ilike @name or unaccent(last_name) ilike @name or unaccent(full_name) ilike @name")
+		args["name"] = "%" + *filter.Name + "%"
+	}
+
 	if filter.ID != nil {
 		where = append(where, "id = @id")
 		args["id"] = *filter.ID
@@ -183,7 +188,8 @@ func getProfessors(ctx context.Context, tx *Tx, filter *etp.ProfessorFilter) ([]
 			last_name,
 			school_id,
 			created_at,
-			updated_at
+			updated_at,
+			full_name
 		from
 			professor
 		where ` + strings.Join(where, " and ") + `

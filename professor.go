@@ -11,6 +11,7 @@ type Professor struct {
 	// Personal Information
 	FirstName string `json:"firstName" db:"first_name"`
 	LastName  string `json:"lastName" db:"last_name"`
+	FullName  string `json:"fullName" db:"full_name"`
 
 	School   *School `json:"school,omitempty" db:"-"`
 	SchoolId int     `json:"schoolId"`
@@ -26,7 +27,8 @@ type Professor struct {
 }
 
 type ProfessorFilter struct {
-	ID *int `json:"id" param:"id"`
+	ID   *int    `json:"id" param:"id"`
+	Name *string `json:"name"`
 
 	Offset int `json:"offset" query:"offset"`
 	Limit  int `json:"limit" query:"limit"`

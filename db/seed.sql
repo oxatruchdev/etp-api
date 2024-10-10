@@ -1,8 +1,8 @@
 -- Seed data for country table
-INSERT INTO country (name, abbreviation, additional_fields) VALUES
-('Brazil', 'BR', '{"continent": "South America", "population": 212559417}'),
-('Mexico', 'MX', '{"continent": "North America", "population": 128932753}'),
-('Argentina', 'AR', '{"continent": "South America", "population": 45195774}');
+INSERT INTO country (name, abbreviation, additional_fields, flag_code) VALUES
+('Brazil', 'BR', '{"continent": "South America", "population": 212559417}', 'br'),
+('Mexico', 'MX', '{"continent": "North America", "population": 128932753}', 'mx'),
+('Argentina', 'AR', '{"continent": "South America", "population": 45195774}', 'ar');
 
 -- Seed data for school table
 INSERT INTO school (name, abbreviation, metadata, country_id) VALUES
@@ -29,10 +29,10 @@ INSERT INTO course (name, code, credits, department_id, school_id) VALUES
 ('Anatomía Humana', 'MED201', 5, 3, 3);
 
 -- Seed data for professor table
-INSERT INTO professor (first_name, last_name, school_id) VALUES
-('João', 'Silva', 1),
-('María', 'González', 2),
-('Carlos', 'Fernández', 3);
+INSERT INTO professor (first_name, last_name, full_name, school_id) VALUES
+('João', 'Silva', 'João Silva', 1),
+('María', 'González', 'María Gonzalez', 2),
+('Carlos', 'Fernández', 'Carlos Fernández', 3);
 
 -- Seed data for professor_rating table
 INSERT INTO professor_rating (rating, comment, would_take_again, mandatory_attendance, grade, textbook_required, is_approved, approvals_count, professor_id, course_id) VALUES

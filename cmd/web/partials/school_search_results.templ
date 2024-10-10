@@ -1,0 +1,30 @@
+package partials
+
+type SchoolSearchResult struct {
+	Name string
+	URL  templ.SafeURL
+	Flag string
+}
+
+type SchoolSearchResultsProps struct {
+	Results []SchoolSearchResult
+}
+
+templ SchoolSearchResults(props SchoolSearchResultsProps) {
+	<ul tabindex="0" id="search-results" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-auto p-2 shadow">
+		for _, result := range props.Results {
+			<li>
+				<a href={ result.URL } class="flex flex-row flex-start">
+					<div class="flex flex-row flex-start">
+						<div class="flex flex-col flex-start">
+							<p class="text-sm flex-start">
+								{ result.Name }
+								<span class={ "fi", result.Flag }></span>
+							</p>
+						</div>
+					</div>
+				</a>
+			</li>
+		}
+	</ul>
+}

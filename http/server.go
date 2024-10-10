@@ -43,6 +43,7 @@ func NewServer() *Server {
 	{
 		s.registerAuthRoutes()
 		s.registerHomeRoutes()
+		s.registerSearchRoutes()
 	}
 
 	slog.Info("Creating middleware stack")
