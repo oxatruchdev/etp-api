@@ -11,7 +11,7 @@ type LoginFormProps struct {
 templ LoginForm(loginForm LoginFormProps) {
 	<form class="space-y-6" hx-post="/login" hx-target-4*="#login-form-container">
 		<div>
-			<label for="email" class="block text-sm font-medium leading-6">Correo electrónico</label>
+			<label for="email" class="block text-sm font-semibold leading-6">Correo electrónico</label>
 			<div class="mt-2">
 				<input id="email" name="email" type="email" value={ loginForm.Email } autocomplete="email" class="w-full input input-bordered"/>
 				if loginForm.Errors["email"] != "" {
@@ -28,9 +28,7 @@ templ LoginForm(loginForm LoginFormProps) {
 					<a href="#" class="link link-primary font-semibold">¿Olvidate tu contraseña?</a>
 				</div>
 			</div>
-			<div class="mt-2">
-				<input id="password" name="password" minlength="8" type="password" value={ loginForm.Password } required class="w-full input input-bordered"/>
-			</div>
+			@components.PasswordInput()
 			if loginForm.Errors["password"] != "" {
 				<div class="mt-4 flex justify-end text-sm text-red-600 font-semibold leading-6">
 					{ loginForm.Errors["password"] }

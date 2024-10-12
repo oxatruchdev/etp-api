@@ -6,8 +6,8 @@ type HomeProps struct {
 	IsAuthenticated bool
 }
 
-templ Home(props HomeProps) {
+templ Home() {
 	@Base("Evalua Tu Profe") {
-		@components.Navbar(props.IsAuthenticated)
+		@components.Navbar()
 	}
 }

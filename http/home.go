@@ -11,5 +11,5 @@ func (s *Server) registerHomeRoutes() {
 }
 
 func (s *Server) home(w http.ResponseWriter, r *http.Request) {
-	Render(w, r, http.StatusOK, web.Home(web.HomeProps{}))
+	Render(w, r, http.StatusOK, web.Home())
 }

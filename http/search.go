@@ -64,7 +64,7 @@ func (s *Server) search(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if search.Type == "professor" {
+	if search.Type == "professor" || search.Type == "" {
 		professors, _, err := s.ProfessorService.GetProfessors(r.Context(), etp.ProfessorFilter{
 			Name: &search.Search,
 		})

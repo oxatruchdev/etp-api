@@ -82,9 +82,6 @@ func ValidateToken(tokenStr string, isRefresh bool) (bool, *Claims, error) {
 		return secretByte, nil
 	})
 
-	slog.Info("Validating token", "token", token)
-	slog.Info("Validating token claims", "claims", claims)
-
 	if err != nil || !token.Valid {
 		slog.Info("Invalid token", "err", err)
 		return false, nil, errors.New("invalid token")

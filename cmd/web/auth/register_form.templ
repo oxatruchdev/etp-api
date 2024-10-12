@@ -23,12 +23,10 @@ templ RegisterForm(registerForm RegisterFormProps) {
 			<div class="flex items-center justify-between">
 				<label for="password" required class="block text-sm font-semibold leading-6">Contraseña</label>
 			</div>
-			<div class="mt-2">
-				<input id="password" minlength="8" required name="password" value={ registerForm.Password } type="password" autocomplete="current-password" required class="input input-bordered w-full"/>
-				if registerForm.Errors["password"] != "" {
-					<p class="mt-2 text-sm text-red-500">{ registerForm.Errors["password"] }</p>
-				}
-			</div>
+			@components.PasswordInput()
+			if registerForm.Errors["password"] != "" {
+				<p class="mt-2 text-sm text-red-500">{ registerForm.Errors["password"] }</p>
+			}
 		</div>
 		<div>
 			<div class="flex items-left justify-end">
