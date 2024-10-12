@@ -1,0 +1,57 @@
+package components
+
+import "github.com/Evalua-Tu-Profe/etp-api"
+import "strconv"
+import "fmt"
+
+type ProfessorCardProps struct {
+	Professor         *etp.Professor
+	School            *etp.School
+	RatingsCount      int
+	Distribution      []*etp.RatingDistribution
+	RatingAvg         float64
+	WouldTakeAgainAvg float64
+	DifficultyAvg     float64
+}
+
+templ ProfessorCard(props ProfessorCardProps) {
+	<div class="card lg:card-side shadow-xl">
+		<div class="card-body">
+			<h2 class="card-title">{ props.Professor.FullName }</h2>
+			<p>{ props.School.Name }</p>
+			<div class="flex flex-col items-center gap-4 my-6">
+				<div class="flex flex-col items-center gap-2">
+					<p class="text-4xl font-semibold">
+						{ strconv.FormatFloat(props.RatingAvg, 'f', 2, 64) } ({ strconv.FormatInt(int64(props.RatingsCount), 10) })
+					</p>
+					<p class="text-md text-primary-content font-semibold">Reseña promedio</p>
+				</div>
+			</div>
+			<div class="flex flex-col items-center gap-4">
+				<div class="flex flex-col items-center gap-2">
+					<p class="text-4xl font-semibold">{ strconv.FormatFloat(props.WouldTakeAgainAvg * 100, 'f', 0, 64) }%</p>
+					<p class="text-md text-primary-content font-semibold">Tomaría de nuevo</p>
+				</div>
+			</div>
+			<div class="flex flex-col items-center gap-4">
+				<div class="flex flex-col items-center gap-2">
+					<p class="text-4xl font-semibold">{ strconv.FormatFloat(props.DifficultyAvg, 'f', 2, 64) }</p>
+					<p class="text-md text-primary-content font-semibold">Difficultad</p>
+				</div>
+			</div>
+			<div class="divider"></div>
+			<div>
+				<p>Distribución</p>
+				for i:= len(props.Distribution) - 1; i >= 0; i-- {
+					<div class="flex items-center">
+						<span class="w-4 text-sm">{ strconv.Itoa(i+1) }</span>
+						<progress class="progress flex-grow" value={ strconv.FormatInt(int64(props.Distribution[i].Count), 10) } max={ strconv.FormatInt(int64(props.RatingsCount), 10) }></progress>
+						<span class="w-8 text-sm text-right">
+							{ fmt.Sprintf("%.0f%%", (float64(props.Distribution[i].Count)/float64(props.RatingsCount)) * 100) }
+						</span>
+					</div>
+				}
+			</div>
+		</div>
+	</div>
+}

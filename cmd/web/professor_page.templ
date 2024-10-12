@@ -1,0 +1,29 @@
+package web
+
+import "github.com/Evalua-Tu-Profe/etp-api/cmd/web/components"
+import "github.com/Evalua-Tu-Profe/etp-api"
+import "fmt"
+
+type ProfessorPageProps struct {
+	Professor        *etp.Professor
+	School           *etp.School
+	RatingsWithStats etp.ProfessorRatingsStats
+}
+
+templ ProfessorPage(props ProfessorPageProps) {
+	@Base(fmt.Sprintf("%s - Evalua Tu Profe", props.Professor.FullName)) {
+		@components.Navbar()
+		<div class="p-8">
+			@components.ProfessorCard(components.ProfessorCardProps{
+				Professor:         props.Professor,
+				School:            props.School,
+				RatingsCount:      props.RatingsWithStats.TotalCount,
+				Distribution:      props.RatingsWithStats.RatingsDistribution,
+				RatingAvg:         props.RatingsWithStats.RatingAvg,
+				WouldTakeAgainAvg: props.RatingsWithStats.WouldTakeAgainAvg,
+				DifficultyAvg:     props.RatingsWithStats.DifficultyAvg,
+			})
+			@components.RatingsList(props.RatingsWithStats.Ratings, props.RatingsWithStats.TotalCount)
+		</div>
+	}
+}

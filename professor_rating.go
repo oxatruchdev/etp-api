@@ -2,8 +2,45 @@ package etp
 
 import (
 	"context"
+	"log/slog"
 	"time"
 )
+
+type RatingDistribution struct {
+	Rating int `json:"rating"`
+	Count  int `json:"count"`
+}
+
+// Check for index out of bounds when accessing RatingsDistribution slice
+func (s *ProfessorRatingsStats) EnsureFullDistribution() {
+	slog.Info("Ensuring full distribution", "distribution", s.RatingsDistribution)
+	completeDist := make([]*RatingDistribution, 5)
+	for i := 0; i < 5; i++ {
+		slog.Info("Ensuring full distribution", "i", i, "distribution leng", len(s.RatingsDistribution))
+		if i >= len(s.RatingsDistribution) {
+			completeDist[i] = &RatingDistribution{
+				Rating: i + 1,
+				Count:  0,
+			}
+		} else {
+			completeDist[i] = &RatingDistribution{
+				Rating: i + 1,
+				Count:  s.RatingsDistribution[i].Count, // Defaults to 0 if not present
+			}
+		}
+	}
+
+	s.RatingsDistribution = completeDist
+}
+
+type ProfessorRatingsStats struct {
+	Ratings             []*ProfessorRating
+	TotalCount          int
+	RatingsDistribution []*RatingDistribution
+	RatingAvg           float64
+	DifficultyAvg       float64
+	WouldTakeAgainAvg   float64
+}
 
 type ProfessorRating struct {
 	ID int `json:"id"`
@@ -15,6 +52,7 @@ type ProfessorRating struct {
 	MandatoryAttendance bool   `json:"mandatoryAttendance" db:"mandatory_attendance"`
 	Grade               string `json:"grade"`
 	TextbookRequired    bool   `json:"textbookRequired" db:"textbook_required"`
+	Difficulty          int    `json:"difficulty"`
 
 	IsApproved     bool `json:"isApproved" db:"is_approved"`
 	ApprovalsCount int  `json:"approvalsCount" db:"approvals_count"`
@@ -60,6 +98,9 @@ type ProfessorRatingService interface {
 	// Updates a professor rating
 	// The rating will be put in a pending state until approved
 	UpdateProfessorRating(ctx context.Context, id int, upd *ProfessorRatingUpdate) (*ProfessorRating, error)
+
+	// Get professor ratings with stats
+	GetProfessorRatingsWithStats(ctx context.Context, filter ProfessorRatingFilter) (*ProfessorRatingsStats, error)
 }
 
 type ProfessorRatingUpdate struct {

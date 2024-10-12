@@ -41,10 +41,10 @@ func NewServer() *Server {
 	s.Mux.Handle("GET /assets/", fileServer)
 
 	{
-		s.registerAuthRoutes()
-		s.registerHomeRoutes()
-		s.registerSearchRoutes()
 		s.registerProfessorRoutes()
+		s.registerAuthRoutes()
+		s.registerSearchRoutes()
+		s.registerHomeRoutes()
 	}
 
 	slog.Info("Creating middleware stack")

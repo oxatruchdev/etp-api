@@ -94,6 +94,149 @@ func (prs *ProfessorRatingService) DeleteProfessorRating(ctx context.Context, id
 	return tx.Commit(ctx)
 }
 
+func (prs *ProfessorRatingService) GetProfessorRatingsWithStats(ctx context.Context, filter etp.ProfessorRatingFilter) (*etp.ProfessorRatingsStats, error) {
+	tx, err := prs.db.BeginTx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback(ctx)
+
+	stats, err := getProfessorRatingStats(ctx, tx, filter)
+	if err != nil {
+		return nil, err
+	}
+
+	return &stats, tx.Commit(ctx)
+}
+
+func getProfessorRatingStats(ctx context.Context, tx *Tx, filter etp.ProfessorRatingFilter) (etp.ProfessorRatingsStats, error) {
+	where, args := []string{"1 = 1"}, pgx.NamedArgs{}
+
+	if v := filter.ProfessorId; v != nil {
+		where = append(where, "professor_id = @professorId")
+		args["professorId"] = *v
+	}
+	if v := filter.CourseId; v != nil {
+		where = append(where, "course_id = @courseId")
+		args["courseId"] = *v
+	}
+
+	// First, get the professor ratings with window functions for avg and total count
+	query := `
+		SELECT 
+			id,
+			rating,
+			comment,
+			would_take_again,
+			mandatory_attendance,
+			grade,
+			textbook_required,
+			approvals_count,
+			is_approved,
+			created_at,
+			course_id,
+			professor_id,
+			updated_at,
+			updated_count,
+			AVG(rating) OVER () AS avg_rating,
+			COUNT(id) OVER () AS total_ratings,
+			AVG(CAST(would_take_again = true AS int)) OVER () as would_take_again_rating,
+			COALESCE(AVG(difficulty) OVER (), 0) as avg_difficulty
+		FROM professor_rating
+		WHERE ` + strings.Join(where, " AND ") +
+		` ORDER BY created_at DESC ` + `
+		` + FormatLimitOffset(filter.Limit, filter.Offset)
+
+	slog.Info("querying professors", "query", query, "args", args)
+
+	rows, err := tx.Query(ctx, query, args)
+	if err != nil {
+		return etp.ProfessorRatingsStats{}, err
+	}
+	defer rows.Close()
+
+	var stats etp.ProfessorRatingsStats
+	var avgRating float64
+	var totalRatings int
+	var avgWouldTakeAgainRating float64
+	var avgDifficulty float64
+
+	for rows.Next() {
+		var professorRating etp.ProfessorRating
+		err = rows.Scan(
+			&professorRating.ID,
+			&professorRating.Rating,
+			&professorRating.Comment,
+			&professorRating.WouldTakeAgain,
+			&professorRating.MandatoryAttendance,
+			&professorRating.Grade,
+			&professorRating.TextbookRequired,
+			&professorRating.ApprovalsCount,
+			&professorRating.IsApproved,
+			&professorRating.CreatedAt,
+			&professorRating.CourseId,
+			&professorRating.ProfessorId,
+			&professorRating.UpdatedAt,
+			&professorRating.UpdatedCount,
+			&avgRating,
+			&totalRatings,
+			&avgWouldTakeAgainRating,
+			&avgDifficulty,
+		)
+		if err != nil {
+			return etp.ProfessorRatingsStats{}, err
+		}
+		stats.Ratings = append(stats.Ratings, &professorRating)
+	}
+
+	if rows.Err() != nil {
+		return etp.ProfessorRatingsStats{}, err
+	}
+
+	stats.TotalCount = totalRatings
+	stats.RatingAvg = avgRating
+	stats.WouldTakeAgainAvg = avgWouldTakeAgainRating
+	stats.DifficultyAvg = avgDifficulty
+
+	// Now query for the rating distribution
+	query = `
+        SELECT rating, COUNT(*) as count
+        FROM professor_rating
+        WHERE professor_id = @professorId
+        GROUP BY rating
+        ORDER BY rating
+    `
+	rows, err = tx.Query(ctx, query, pgx.NamedArgs{"professorId": filter.ProfessorId})
+	if err != nil {
+		slog.Info("rows err after scan for rating distribution", "err", rows.Err())
+		return etp.ProfessorRatingsStats{}, err
+	}
+
+	defer rows.Close()
+
+	var ratingDistribution []*etp.RatingDistribution
+	for rows.Next() {
+		var ratingDistributionItem etp.RatingDistribution
+		err = rows.Scan(
+			&ratingDistributionItem.Rating,
+			&ratingDistributionItem.Count,
+		)
+		if err != nil {
+			return etp.ProfessorRatingsStats{}, err
+		}
+		ratingDistribution = append(ratingDistribution, &ratingDistributionItem)
+	}
+
+	if rows.Err() != nil {
+		return etp.ProfessorRatingsStats{}, err
+	}
+
+	stats.RatingsDistribution = ratingDistribution
+	stats.EnsureFullDistribution()
+
+	return stats, nil
+}
+
 // Functions for handling Professor Ratings
 func deleteProfessorRating(ctx context.Context, tx *Tx, id int) error {
 	query := `
