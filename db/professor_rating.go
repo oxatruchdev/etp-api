@@ -113,18 +113,18 @@ func getProfessorRatingStats(ctx context.Context, tx *Tx, filter etp.ProfessorRa
 	where, args := []string{"1 = 1"}, pgx.NamedArgs{}
 
 	if v := filter.ProfessorId; v != nil {
-		where = append(where, "professor_id = @professorId")
+		where = append(where, "p_r.professor_id = @professorId")
 		args["professorId"] = *v
 	}
 	if v := filter.CourseId; v != nil {
-		where = append(where, "course_id = @courseId")
+		where = append(where, "p_r.course_id = @courseId")
 		args["courseId"] = *v
 	}
 
 	// First, get the professor ratings with window functions for avg and total count
 	query := `
 		SELECT 
-			id,
+			p_r.id,
 			rating,
 			comment,
 			would_take_again,
@@ -133,16 +133,21 @@ func getProfessorRatingStats(ctx context.Context, tx *Tx, filter etp.ProfessorRa
 			textbook_required,
 			approvals_count,
 			is_approved,
-			created_at,
+			p_r.created_at,
 			course_id,
 			professor_id,
-			updated_at,
+			p_r.updated_at,
 			updated_count,
+			COALESCE(difficulty, 0),
 			AVG(rating) OVER () AS avg_rating,
-			COUNT(id) OVER () AS total_ratings,
+			COUNT(p_r.id) OVER () AS total_ratings,
 			AVG(CAST(would_take_again = true AS int)) OVER () as would_take_again_rating,
-			COALESCE(AVG(difficulty) OVER (), 0) as avg_difficulty
-		FROM professor_rating
+			COALESCE(AVG(difficulty) OVER (), 0) as avg_difficulty,
+			course.id,
+			course.name,
+			course.code
+		FROM professor_rating p_r
+		LEFT JOIN course on course.id = p_r.course_id
 		WHERE ` + strings.Join(where, " AND ") +
 		` ORDER BY created_at DESC ` + `
 		` + FormatLimitOffset(filter.Limit, filter.Offset)
@@ -163,6 +168,7 @@ func getProfessorRatingStats(ctx context.Context, tx *Tx, filter etp.ProfessorRa
 
 	for rows.Next() {
 		var professorRating etp.ProfessorRating
+		professorRating.Course = &etp.Course{}
 		err = rows.Scan(
 			&professorRating.ID,
 			&professorRating.Rating,
@@ -178,11 +184,17 @@ func getProfessorRatingStats(ctx context.Context, tx *Tx, filter etp.ProfessorRa
 			&professorRating.ProfessorId,
 			&professorRating.UpdatedAt,
 			&professorRating.UpdatedCount,
+			&professorRating.Difficulty,
 			&avgRating,
 			&totalRatings,
 			&avgWouldTakeAgainRating,
 			&avgDifficulty,
+			&professorRating.Course.ID,
+			&professorRating.Course.Name,
+			&professorRating.Course.Code,
 		)
+
+		slog.Info("rating", "profrating", professorRating)
 		if err != nil {
 			return etp.ProfessorRatingsStats{}, err
 		}

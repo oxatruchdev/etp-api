@@ -13,7 +13,7 @@ type ProfessorPageProps struct {
 templ ProfessorPage(props ProfessorPageProps) {
 	@Base(fmt.Sprintf("%s - Evalua Tu Profe", props.Professor.FullName)) {
 		@components.Navbar()
-		<div class="p-8">
+		@components.ContentContainer() {
 			@components.ProfessorCard(components.ProfessorCardProps{
 				Professor:         props.Professor,
 				School:            props.School,
@@ -23,7 +23,8 @@ templ ProfessorPage(props ProfessorPageProps) {
 				WouldTakeAgainAvg: props.RatingsWithStats.WouldTakeAgainAvg,
 				DifficultyAvg:     props.RatingsWithStats.DifficultyAvg,
 			})
+			<h2 class="text-l md:text-2xl font-bold mt-4">Reseñas recientes ({ fmt.Sprintf("%d", props.RatingsWithStats.TotalCount) })</h2>
 			@components.RatingsList(props.RatingsWithStats.Ratings, props.RatingsWithStats.TotalCount)
-		</div>
+		}
 	}
 }

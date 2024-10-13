@@ -17,33 +17,38 @@ type ProfessorCardProps struct {
 templ ProfessorCard(props ProfessorCardProps) {
 	<div class="card lg:card-side shadow-xl">
 		<div class="card-body">
-			<h2 class="card-title">{ props.Professor.FullName }</h2>
-			<p>{ props.School.Name }</p>
-			<div class="flex flex-col items-center gap-4 my-6">
-				<div class="flex flex-col items-center gap-2">
-					<p class="text-4xl font-semibold">
-						{ strconv.FormatFloat(props.RatingAvg, 'f', 2, 64) } ({ strconv.FormatInt(int64(props.RatingsCount), 10) })
-					</p>
-					<p class="text-md text-primary-content font-semibold">Reseña promedio</p>
+			<div class="flex flex-col items-center">
+				<h2 class="text-xl card-title md:text-4xl">{ props.Professor.FullName }</h2>
+				<a class="link link-primary" href={ templ.SafeURL("/school/" + fmt.Sprintf("%d", props.School.ID)) }>{ props.School.Name }</a>
+				<p>TODO: DEPARTMENTS</p>
+				<div class="flex flex-col items-center gap-4 mt-6">
+					<div class="flex flex-col items-center gap-2">
+						<p class="text-4xl font-semibold">
+							{ strconv.FormatFloat(props.RatingAvg, 'f', 1, 64) } / 5
+						</p>
+						<p class="text-md text-primary-content font-semibold">Reseña promedio</p>
+					</div>
 				</div>
-			</div>
-			<div class="flex flex-col items-center gap-4">
-				<div class="flex flex-col items-center gap-2">
-					<p class="text-4xl font-semibold">{ strconv.FormatFloat(props.WouldTakeAgainAvg * 100, 'f', 0, 64) }%</p>
-					<p class="text-md text-primary-content font-semibold">Tomaría de nuevo</p>
+				<div class="flex flex-col items-center gap-4 mt-2">
+					<div class="flex flex-col items-center gap-2">
+						<p class="text-4xl font-semibold">{ strconv.FormatFloat(props.WouldTakeAgainAvg * 100, 'f', 0, 64) }%</p>
+						<p class="text-md text-primary-content font-semibold">Tomaría de nuevo</p>
+					</div>
 				</div>
-			</div>
-			<div class="flex flex-col items-center gap-4">
-				<div class="flex flex-col items-center gap-2">
-					<p class="text-4xl font-semibold">{ strconv.FormatFloat(props.DifficultyAvg, 'f', 2, 64) }</p>
-					<p class="text-md text-primary-content font-semibold">Difficultad</p>
+				<div class="flex flex-col items-center gap-4 mt-2">
+					<div class="flex flex-col items-center gap-2">
+						<p class="text-4xl font-semibold">{ strconv.FormatFloat(props.DifficultyAvg, 'f', 2, 64) }</p>
+						<p class="text-md text-primary-content font-semibold">Dificultad</p>
+					</div>
 				</div>
+				<p class="text-xl">TODO: TAGS FOR PROFESSORS</p>
 			</div>
+			//TODO: Add tags for professor
 			<div class="divider"></div>
 			<div>
-				<p>Distribución</p>
+				<p class="font-semibold mb-2">Distribución</p>
 				for i:= len(props.Distribution) - 1; i >= 0; i-- {
-					<div class="flex items-center">
+					<div class="flex items-center gap-1">
 						<span class="w-4 text-sm">{ strconv.Itoa(i+1) }</span>
 						<progress class="progress flex-grow" value={ strconv.FormatInt(int64(props.Distribution[i].Count), 10) } max={ strconv.FormatInt(int64(props.RatingsCount), 10) }></progress>
 						<span class="w-8 text-sm text-right">

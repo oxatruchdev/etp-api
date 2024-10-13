@@ -1,11 +1,114 @@
 package components
 
-import "github.com/Evalua-Tu-Profe/etp-api"
+import (
+	"github.com/Evalua-Tu-Profe/etp-api"
+	"fmt"
+	"github.com/Evalua-Tu-Profe/etp-api/utils"
+)
+
+func getRatingBgColor(rating int) string {
+	if rating >= 1 && rating < 3 {
+		return "bg-red-300"
+	} else if rating == 3 {
+		return "bg-yellow-300"
+	}
+	return "bg-green-300"
+}
+
+func getDifficultyBgColor(difficulty int) string {
+	if difficulty >= 1 && difficulty < 3 {
+		return "bg-green-300"
+	} else if difficulty == 3 {
+		return "bg-yellow-300"
+	}
+	return "bg-red-300"
+}
+
+func iif[T any](b bool, i, e T) T {
+	if b {
+		return i
+	}
+	return e
+}
 
 templ RatingsList(ratings []*etp.ProfessorRating, count int) {
 	<div class="flex flex-col gap-4">
 		for _, rating := range ratings {
-			<div>{ rating.Grade } </div>
+			<div class="card lg:card-side shadow-lg">
+				<div class="card-body">
+					// Card header
+					<div class="flex justify-between">
+						<div class="flex flex-col">
+							<p class="font-semibold">{ rating.Course.Name }</p>
+							<p class="font-semibold">
+								{ rating.Course.Code }
+							</p>
+						</div>
+						<p class="flex justify-end">{ utils.FormatTimeInSpanish(rating.CreatedAt.String(), "January, 2 2006") }</p>
+					</div>
+					<p class="divider"></p>
+					// Rating body
+					<div class="flex flex-col gap-2">
+						// Rating and difficulty
+						<div class="flex gap-4">
+							//Rating box
+							<div class="div flex flex-col gap-1">
+								<p class="text-l font-semibold">
+									Puntuación
+								</p>
+								<div class={ "p-4 rounded " + getRatingBgColor(rating.Rating) }>
+									<p class="text-center text-3xl font-bold">
+										{ fmt.Sprintf("%d", rating.Rating) } / 5
+									</p>
+								</div>
+							</div>
+							// Difficulty Box
+							<div class="div flex flex-col gap-1">
+								<p class="text-l font-semibold">
+									Dificultad
+								</p>
+								<div class={ "p-4 rounded " + getDifficultyBgColor(rating.Difficulty) }>
+									<p class="text-center text-3xl font-bold">
+										{ fmt.Sprintf("%d", rating.Difficulty) } / 5
+									</p>
+								</div>
+							</div>
+						</div>
+						// Rest of the rating
+						// WouldTakeAgain
+						<p class="text-l mt-2">
+							La tomaría otra vez: 
+							<span class="font-semibold">
+								{ iif(rating.WouldTakeAgain, "Sí", "No") }
+							</span>
+						</p>
+						// TextbookRequired
+						<p class="text-l">
+							Se requiere libro: 
+							<span class="font-semibold">
+								{ iif(rating.TextbookRequired, "Sí", "No") }
+							</span>
+						</p>
+						// MandatoryAssistance
+						<p class="text-l">
+							Asistencia requerida: 
+							<span class="font-semibold">
+								{ iif(rating.MandatoryAttendance, "Sí", "No") }
+							</span>
+						</p>
+						// Grade
+						<p class="text-l">
+							Calificación obtenida: 
+							<span class="font-semibold">
+								{ rating.Grade }
+							</span>
+						</p>
+						<p class="mt-4">
+							{ rating.Comment }
+						</p>
+					</div>
+				</div>
+			</div>
 		}
 	</div>
 }
