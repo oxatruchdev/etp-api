@@ -38,6 +38,9 @@ type ProfessorService interface {
 	// Gets a professor by id
 	GetProfessorById(ctx context.Context, id int) (*Professor, error)
 
+	// Gets professor's courses
+	GetProfessorCourses(ctx context.Context, id int) ([]*Course, error)
+
 	// Gets all professors
 	// Offset and Limit are used for pagination
 	GetProfessors(ctx context.Context, filter ProfessorFilter) ([]*Professor, int, error)

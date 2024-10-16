@@ -100,6 +100,59 @@ func (ps *ProfessorService) DeleteProfessor(ctx context.Context, id int) error {
 	return tx.Commit(ctx)
 }
 
+func (s *ProfessorService) GetProfessorCourses(ctx context.Context, id int) ([]*etp.Course, error) {
+	tx, err := s.db.BeginTx(ctx)
+	if err != nil {
+		return []*etp.Course{}, err
+	}
+	defer tx.Rollback(ctx)
+
+	courses, err := getProfessorCourses(ctx, tx, id)
+	if err != nil {
+		return []*etp.Course{}, err
+	}
+
+	return courses, tx.Commit(ctx)
+}
+
+func getProfessorCourses(ctx context.Context, tx *Tx, id int) ([]*etp.Course, error) {
+	query := `
+		select 
+			c.id,
+			name,
+			code
+		from course c
+		left join professor_course pc on pc.course_id = c.id
+		where pc.professor_id = @professorId;	
+	`
+
+	args := pgx.NamedArgs{
+		"professorId": id,
+	}
+
+	rows, err := tx.Query(ctx, query, args)
+	if err != nil {
+		return []*etp.Course{}, err
+	}
+	defer rows.Close()
+
+	var course []*etp.Course
+	for rows.Next() {
+		var department etp.Course
+		err := rows.Scan(
+			&department.ID,
+			&department.Name,
+			&department.Code,
+		)
+		if err != nil {
+			return []*etp.Course{}, err
+		}
+		course = append(course, &department)
+	}
+
+	return course, nil
+}
+
 func updateProfessor(ctx context.Context, tx *Tx, id int, upd *etp.ProfessorUpdate) (*etp.Professor, error) {
 	professor, err := getProfessorById(ctx, tx, id)
 	if err != nil {

@@ -32,7 +32,7 @@ func iif[T any](b bool, i, e T) T {
 }
 
 templ RatingsList(ratings []*etp.ProfessorRating, count int) {
-	<div class="flex flex-col gap-4">
+	<div id="professor-ratings-list" class="flex flex-col gap-4">
 		for _, rating := range ratings {
 			<div class="card lg:card-side shadow-lg">
 				<div class="card-body">

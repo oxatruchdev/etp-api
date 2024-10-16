@@ -7,10 +7,12 @@ import (
 
 	"github.com/Evalua-Tu-Profe/etp-api"
 	"github.com/Evalua-Tu-Profe/etp-api/cmd/web"
+	"github.com/Evalua-Tu-Profe/etp-api/cmd/web/components"
 )
 
 func (s *Server) registerProfessorRoutes() {
 	s.Mux.HandleFunc("GET /professor/{id}", s.getProfessor)
+	s.Mux.HandleFunc("GET /professor/{id}/reviews", s.getProfessorReviews)
 }
 
 func (s *Server) getProfessor(w http.ResponseWriter, r *http.Request) {
@@ -33,6 +35,14 @@ func (s *Server) getProfessor(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	// Getting courses for that professor
+	departments, err := s.ProfessorService.GetProfessorCourses(r.Context(), idInt)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	professor.Courses = departments
 
 	slog.Info("Got professor", "id", id, "professor", professor)
 
@@ -67,4 +77,38 @@ func (s *Server) getProfessor(w http.ResponseWriter, r *http.Request) {
 		RatingsWithStats: *ratings,
 	}
 	Render(w, r, http.StatusOK, web.ProfessorPage(props))
+}
+
+func (s *Server) getProfessorReviews(w http.ResponseWriter, r *http.Request) {
+	slog.Info("Getting professor")
+	id := r.PathValue("id")
+	if id == "" {
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
+
+	idInt, err := strconv.Atoi(id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	filter := etp.ProfessorRatingFilter{
+		ProfessorId: &idInt,
+	}
+
+	course := r.URL.Query().Get("course")
+	if course != "" {
+		courseId, err := strconv.Atoi(course)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		filter.CourseId = &courseId
+	}
+
+	// Getting professor ratings
+	ratings, err := s.ProfessorRatingService.GetProfessorRatingsWithStats(r.Context(), filter)
+
+	Render(w, r, 200, components.RatingsList(ratings.Ratings, ratings.TotalCount))
 }

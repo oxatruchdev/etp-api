@@ -2371,6 +2371,10 @@ select {
   margin-bottom: 0.5rem;
 }
 
+.mb-4 {
+  margin-bottom: 1rem;
+}
+
 .ml-2 {
   margin-left: 0.5rem;
 }
@@ -2778,6 +2782,10 @@ select {
     order: 9999;
   }
 
+  .md\:m-0 {
+    margin: 0px;
+  }
+
   .md\:mx-auto {
     margin-left: auto;
     margin-right: auto;
@@ -2790,6 +2798,10 @@ select {
 
   .md\:flex {
     display: flex;
+  }
+
+  .md\:w-auto {
+    width: auto;
   }
 
   .md\:max-w-screen-md {

@@ -23,7 +23,20 @@ templ ProfessorPage(props ProfessorPageProps) {
 				WouldTakeAgainAvg: props.RatingsWithStats.WouldTakeAgainAvg,
 				DifficultyAvg:     props.RatingsWithStats.DifficultyAvg,
 			})
-			<h2 class="text-l md:text-2xl font-bold mt-4">Reseñas recientes ({ fmt.Sprintf("%d", props.RatingsWithStats.TotalCount) })</h2>
+			<div class="flex flex-col md:flex-row justify-between mt-6 mb-4">
+				<h2 class="text-l md:text-2xl font-bold mt-4">
+					// TODO: update count to selected course count
+					Opiniones recientes ({ fmt.Sprintf("%d", props.RatingsWithStats.TotalCount) })
+				</h2>
+				<select hx-target="#professor-ratings-list" hx-get={ fmt.Sprintf("/professor/%d/reviews", props.Professor.ID) } hx-trigger="change" class="w-full md:w-auto select select-bordered select-md mt-2 md:m-0" name="course">
+					<option selected value="">
+						Todas las clases
+					</option>
+					for _, course := range props.Professor.Courses {
+						<option value={ fmt.Sprintf("%d", course.ID) }>{ course.Name }</option>
+					}
+				</select>
+			</div>
 			@components.RatingsList(props.RatingsWithStats.Ratings, props.RatingsWithStats.TotalCount)
 		}
 	}

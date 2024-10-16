@@ -30,7 +30,7 @@ func CreateAccessToken(email string, roleID int, userID int) (string, error) {
 		},
 	}
 
-	accessSecret, ok := os.LookupEnv("JWT_ACCESS_TOKEN_SECRET")
+	accessSecret, ok := os.LookupEnv("JWT_ACCESS_SECRET")
 	if !ok {
 		return "", errors.New("access secret not found")
 	}
@@ -49,7 +49,7 @@ func CreateRefreshToken(userID int) (string, error) {
 		},
 	}
 
-	refreshSecret, ok := os.LookupEnv("JWT_REFRESH_TOKEN_SECRET")
+	refreshSecret, ok := os.LookupEnv("JWT_REFRESH_SECRET")
 	if !ok {
 		return "", errors.New("refresh secret not found")
 	}
@@ -63,13 +63,13 @@ func ValidateToken(tokenStr string, isRefresh bool) (bool, *Claims, error) {
 	claims := &Claims{}
 	var secret string
 	if isRefresh {
-		s, ok := os.LookupEnv("JWT_REFRESH_TOKEN_SECRET")
+		s, ok := os.LookupEnv("JWT_REFRESH_SECRET")
 		if !ok {
 			return false, nil, errors.New("refresh secret not found")
 		}
 		secret = s
 	} else {
-		s, ok := os.LookupEnv("JWT_ACCESS_TOKEN_SECRET")
+		s, ok := os.LookupEnv("JWT_ACCESS_SECRET")
 		if !ok {
 			return false, nil, errors.New("access secret not found")
 		}
@@ -96,7 +96,7 @@ func GetTokenClaims(ctx context.Context) *Claims {
 		return nil
 	}
 	jwt, err := jwt.ParseWithClaims(token.(string), &Claims{}, func(token *jwt.Token) (interface{}, error) {
-		return []byte(os.Getenv("JWT_ACCESS_TOKEN_SECRET")), nil
+		return []byte(os.Getenv("JWT_ACCESS_SECRET")), nil
 	})
 	if err != nil {
 		return nil

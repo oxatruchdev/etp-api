@@ -19,7 +19,7 @@ templ ProfessorCard(props ProfessorCardProps) {
 		<div class="card-body">
 			<div class="flex flex-col items-center">
 				<h2 class="text-xl card-title md:text-4xl">{ props.Professor.FullName }</h2>
-				<a class="link link-primary" href={ templ.SafeURL("/school/" + fmt.Sprintf("%d", props.School.ID)) }>{ props.School.Name }</a>
+				<a class="link link-primary text-center" href={ templ.SafeURL("/school/" + fmt.Sprintf("%d", props.School.ID)) }>{ props.School.Name }</a>
 				<p>TODO: DEPARTMENTS</p>
 				<div class="flex flex-col items-center gap-4 mt-6">
 					<div class="flex flex-col items-center gap-2">
