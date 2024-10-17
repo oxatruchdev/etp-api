@@ -2,7 +2,7 @@ package etp
 
 import (
 	"context"
-	"log/slog"
+	"sort"
 	"time"
 )
 
@@ -13,24 +13,27 @@ type RatingDistribution struct {
 
 // Check for index out of bounds when accessing RatingsDistribution slice
 func (s *ProfessorRatingsStats) EnsureFullDistribution() {
-	slog.Info("Ensuring full distribution", "distribution", s.RatingsDistribution)
-	completeDist := make([]*RatingDistribution, 5)
+	// Create a map to track existing ratings
+	existingRatings := make(map[int]bool)
+
+	// Mark existing ratings
+	for _, dist := range s.RatingsDistribution {
+		existingRatings[dist.Rating-1] = true
+	}
+
+	// Add missing ratings with count 0
 	for i := 0; i < 5; i++ {
-		slog.Info("Ensuring full distribution", "i", i, "distribution leng", len(s.RatingsDistribution))
-		if i >= len(s.RatingsDistribution) {
-			completeDist[i] = &RatingDistribution{
+		if !existingRatings[i] {
+			s.RatingsDistribution = append(s.RatingsDistribution, &RatingDistribution{
 				Rating: i + 1,
 				Count:  0,
-			}
-		} else {
-			completeDist[i] = &RatingDistribution{
-				Rating: i + 1,
-				Count:  s.RatingsDistribution[i].Count, // Defaults to 0 if not present
-			}
+			})
 		}
 	}
 
-	s.RatingsDistribution = completeDist
+	sort.Slice(s.RatingsDistribution, func(i, j int) bool {
+		return s.RatingsDistribution[i].Rating < s.RatingsDistribution[j].Rating
+	})
 }
 
 type ProfessorRatingsStats struct {
