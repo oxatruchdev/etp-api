@@ -246,3 +246,67 @@ INSERT INTO role (name, display_name) VALUES
 ('moderator', 'Moderador'),
 ('school_admin', 'Administrador de Escuela'),
 ('admin', 'Administrador');
+
+-- Seed data for tag table in Spanish
+
+INSERT INTO tag (name) VALUES
+('Excelente Enseñanza'),
+('Calificador Estricto'),
+('Servicial'),
+('Explicaciones Claras'),
+('Clases Dinámicas'),
+('Participación Obligatoria'),
+('Créditos Extra Disponibles'),
+('Proyectos Grupales'),
+('Evaluación Justa'),
+('Asistencia Obligatoria'),
+('Plazos Flexibles'),
+('Da Buenas Retroalimentaciones'),
+('Inspirador'),
+('Exámenes Difíciles'),
+('Tareas Exigentes'),
+('Accesible Fuera de Clase'),
+('Exámenes Pesados'),
+('Conocimiento Práctico'),
+('Basado en Teoría'),
+('Usa Ejemplos del Mundo Real');
+
+-- Seed data for profesor_rating_tag table
+
+INSERT INTO professor_rating_tag (professor_rating_id, tag_id) VALUES
+(1, 1),  -- Excelente Enseñanza
+(1, 4),  -- Explicaciones Claras
+(1, 9),  -- Evaluación Justa
+(2, 2),  -- Calificador Estricto
+(2, 6),  -- Participación Obligatoria
+(2, 13), -- Inspirador
+(3, 8),  -- Proyectos Grupales
+(3, 3),  -- Servicial
+(3, 12), -- Da Buenas Retroalimentaciones
+(4, 7),  -- Créditos Extra Disponibles
+(4, 14), -- Exámenes Difíciles
+(4, 17), -- Exámenes Pesados
+(5, 5),  -- Clases Dinámicas
+(5, 11), -- Plazos Flexibles
+(5, 16), -- Accesible Fuera de Clase
+(6, 10), -- Asistencia Obligatoria
+(6, 18), -- Conocimiento Práctico
+(7, 19), -- Basado en Teoría
+(7, 20), -- Usa Ejemplos del Mundo Real
+(7, 9),  -- Evaluación Justa
+(8, 3),  -- Servicial
+(8, 5),  -- Clases Dinámicas
+(8, 8),  -- Proyectos Grupales
+(9, 2),  -- Calificador Estricto
+(9, 14), -- Exámenes Difíciles
+(9, 17), -- Exámenes Pesados
+(10, 6), -- Participación Obligatoria
+(10, 11),-- Plazos Flexibles
+(10, 13),-- Inspirador
+(11, 12),-- Da Buenas Retroalimentaciones
+(11, 18),-- Conocimiento Práctico
+(11, 20),-- Usa Ejemplos del Mundo Real
+(12, 1), -- Excelente Enseñanza
+(12, 4), -- Explicaciones Claras
+(12, 9); -- Evaluación Justa
+

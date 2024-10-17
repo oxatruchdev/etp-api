@@ -22,6 +22,8 @@ type SchoolRating struct {
 	User   *User `json:"user"`
 	UserID int   `json:"userId" db:"user_id"`
 
+	Tags []*Tag `json:"tags,omitempty" db:"-"`
+
 	// CreatedAt and UpdatedAt are used for tracking
 	CreatedAt time.Time `json:"createdAt" db:"created_at"`
 	UpdatedAt time.Time `json:"updatedAt" db:"updated_at"`

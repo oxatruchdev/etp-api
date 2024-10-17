@@ -68,6 +68,7 @@ type ProfessorRating struct {
 	ProfessorId int        `json:"professorId"`
 	User        *User      `json:"user,omitempty" db:"-"`
 	UserId      int        `json:"userId" db:"user_id"`
+	Tags        []*Tag     `json:"tags,omitempty" db:"-"`
 
 	// CreatedAt and UpdatedAt are used for tracking
 	CreatedAt time.Time `json:"createdAt" db:"created_at"`
