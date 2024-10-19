@@ -71,6 +71,17 @@ func (s *Server) getProfessor(w http.ResponseWriter, r *http.Request) {
 	}
 	professor.Ratings = ratings.Ratings
 
+	// Getting professor's most popular tags
+	tags, err := s.ProfessorService.GetProfessorTags(r.Context(), idInt)
+
+	slog.Info("Got tags", "tags", tags)
+	if err != nil {
+		slog.Info("error getting tags", "error", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	professor.PopularTags = tags
+
 	props := web.ProfessorPageProps{
 		Professor:        professor,
 		School:           professor.School,

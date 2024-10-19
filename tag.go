@@ -7,8 +7,8 @@ import (
 )
 
 type Tag struct {
-	ID   int
-	Name string
+	ID   int    `json:"id"`
+	Name string `json:"name"`
 
 	// Relations
 	ProfessorRatings []*ProfessorRating
@@ -16,6 +16,11 @@ type Tag struct {
 
 	CreatedAt pgtype.Timestamptz
 	UpdatedAt pgtype.Timestamptz
+}
+
+type TagWithCount struct {
+	Tag
+	Count int `json:"count" db:"usage_count"`
 }
 
 type TagService interface {

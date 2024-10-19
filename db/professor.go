@@ -2,6 +2,8 @@ package db
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"log/slog"
 	"strings"
 
@@ -113,6 +115,69 @@ func (s *ProfessorService) GetProfessorCourses(ctx context.Context, id int) ([]*
 	}
 
 	return courses, tx.Commit(ctx)
+}
+
+func (s *ProfessorService) GetProfessorTags(ctx context.Context, id int) ([]*etp.TagWithCount, error) {
+	tx, err := s.db.BeginTx(ctx)
+	if err != nil {
+		return []*etp.TagWithCount{}, err
+	}
+	defer tx.Rollback(ctx)
+
+	tags, err := getProfessorPopularTags(ctx, tx, id)
+	if err != nil {
+		return []*etp.TagWithCount{}, err
+	}
+
+	return tags, tx.Commit(ctx)
+}
+
+func getProfessorPopularTags(ctx context.Context, tx *Tx, id int) ([]*etp.TagWithCount, error) {
+	query := `
+		WITH tag_counts AS (
+			SELECT 
+					t.id,
+					t.name,
+					pr.professor_id,
+					COUNT(*) as usage_count
+			FROM professor_rating_tag prt
+			JOIN tag t ON t.id = prt.tag_id
+			JOIN professor_rating pr ON pr.id = prt.professor_rating_id
+			WHERE pr.professor_id = @professorId
+			GROUP BY t.id, t.name, pr.professor_id
+			ORDER BY usage_count DESC
+			LIMIT 3
+		)
+		SELECT 
+				COALESCE(jsonb_agg(
+						jsonb_build_object(
+								'id', id,
+								'name', name,
+								'usage_count', usage_count
+						)
+						ORDER BY usage_count DESC
+						
+				), '[]'::jsonb) as popular_tags
+		FROM tag_counts
+	`
+
+	var tagsJSON []byte
+	err := tx.QueryRow(ctx, query, pgx.NamedArgs{
+		"professorId": id,
+	}).Scan(&tagsJSON)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return []*etp.TagWithCount{}, nil // return empty slice if no results
+		}
+		return nil, err
+	}
+
+	var popularTags []*etp.TagWithCount
+	if err := json.Unmarshal(tagsJSON, &popularTags); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal popular tags: %w", err)
+	}
+
+	return popularTags, nil
 }
 
 func getProfessorCourses(ctx context.Context, tx *Tx, id int) ([]*etp.Course, error) {

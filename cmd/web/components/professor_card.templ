@@ -41,9 +41,14 @@ templ ProfessorCard(props ProfessorCardProps) {
 						<p class="text-md text-primary-content font-semibold">Dificultad</p>
 					</div>
 				</div>
-				<p class="text-xl">TODO: TAGS FOR PROFESSORS</p>
+				<div class="flex flex-col md:flex-row gap-1 md:gap-2 text-center md:mt-4">
+					for _, tag := range props.Professor.PopularTags {
+						<div class="badge badge-outline badge-lg mt-2 md:mt-0 md:mr-4">
+							{ tag.Name }
+						</div>
+					}
+				</div>
 			</div>
-			//TODO: Add tags for professor
 			<div class="divider"></div>
 			<div>
 				<p class="font-semibold mb-2">Distribución</p>

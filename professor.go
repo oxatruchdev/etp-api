@@ -20,6 +20,7 @@ type Professor struct {
 	Ratings     []*ProfessorRating `json:"ratings,omitempty" db:"-"`
 	Departments []*Department      `json:"departments,omitempty" db:"-"`
 	Courses     []*Course          `json:"courses,omitempty" db:"-"`
+	PopularTags []*TagWithCount    `json:"popularTags,omitempty" db:"-"`
 
 	// CreatedAt and UpdatedAt are used for tracking
 	CreatedAt time.Time `json:"createdAt" db:"created_at"`
@@ -53,6 +54,9 @@ type ProfessorService interface {
 
 	// Deletes a professor
 	DeleteProfessor(ctx context.Context, id int) error
+
+	// Gets professor's most popular tags
+	GetProfessorTags(ctx context.Context, id int) ([]*TagWithCount, error)
 }
 
 type ProfessorUpdate struct {
