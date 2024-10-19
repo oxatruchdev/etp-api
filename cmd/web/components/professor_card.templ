@@ -26,19 +26,19 @@ templ ProfessorCard(props ProfessorCardProps) {
 						<p class="text-4xl font-semibold">
 							{ strconv.FormatFloat(props.RatingAvg, 'f', 1, 64) } / 5
 						</p>
-						<p class="text-md text-primary-content font-semibold">Reseña promedio</p>
+						<p class="text-md text-primary">Reseña promedio</p>
 					</div>
 				</div>
 				<div class="flex flex-col items-center gap-4 mt-2">
 					<div class="flex flex-col items-center gap-2">
 						<p class="text-4xl font-semibold">{ strconv.FormatFloat(props.WouldTakeAgainAvg * 100, 'f', 0, 64) }%</p>
-						<p class="text-md text-primary-content font-semibold">Tomaría de nuevo</p>
+						<p class="text-md text-primary">Tomaría de nuevo</p>
 					</div>
 				</div>
 				<div class="flex flex-col items-center gap-4 mt-2">
 					<div class="flex flex-col items-center gap-2">
 						<p class="text-4xl font-semibold">{ strconv.FormatFloat(props.DifficultyAvg, 'f', 2, 64) }</p>
-						<p class="text-md text-primary-content font-semibold">Dificultad</p>
+						<p class="text-md text-primary">Dificultad</p>
 					</div>
 				</div>
 				<div class="flex flex-col md:flex-row gap-1 md:gap-2 text-center md:mt-4">
