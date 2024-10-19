@@ -2,6 +2,8 @@ package db
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"log/slog"
 	"strings"
 
@@ -123,31 +125,68 @@ func getProfessorRatingStats(ctx context.Context, tx *Tx, filter etp.ProfessorRa
 
 	// First, get the professor ratings with window functions for avg and total count
 	query := `
+		WITH 
+		    rating_tags AS (
+			SELECT 
+			    prt.professor_rating_id,
+			    jsonb_agg(
+				jsonb_build_object(
+				    'id', t.id,
+				    'name', t.name
+				)
+			    ) as tags
+			FROM professor_rating_tag prt
+			JOIN tag t ON t.id = prt.tag_id
+			GROUP BY prt.professor_rating_id
+		    ),
+		    rating_distribution AS (
+			SELECT 
+			    professor_id,
+			    jsonb_agg(
+				jsonb_build_object(
+				    'rating', rating,
+				    'count', count
+				) ORDER BY rating
+			    ) as distribution
+			FROM (
+			    SELECT 
+				professor_id,
+				rating, 
+				COUNT(*) as count
+			    FROM professor_rating
+			    GROUP BY professor_id, rating
+			) rd
+			GROUP BY professor_id
+		    )
 		SELECT 
-			p_r.id,
-			rating,
-			comment,
-			would_take_again,
-			mandatory_attendance,
-			grade,
-			textbook_required,
-			approvals_count,
-			is_approved,
-			p_r.created_at,
-			course_id,
-			professor_id,
-			p_r.updated_at,
-			updated_count,
-			COALESCE(difficulty, 0),
-			AVG(rating) OVER () AS avg_rating,
-			COUNT(p_r.id) OVER () AS total_ratings,
-			AVG(CAST(would_take_again = true AS int)) OVER () as would_take_again_rating,
-			COALESCE(AVG(difficulty) OVER (), 0) as avg_difficulty,
-			course.id,
-			course.name,
-			course.code
+		    p_r.id,
+		    rating,
+		    comment,
+		    would_take_again,
+		    mandatory_attendance,
+		    grade,
+		    textbook_required,
+		    approvals_count,
+		    is_approved,
+		    p_r.created_at,
+		    course_id,
+		    p_r.professor_id,
+		    p_r.updated_at,
+		    updated_count,
+		    COALESCE(difficulty, 0),
+		    AVG(rating) OVER () AS avg_rating,
+		    COUNT(p_r.id) OVER () AS total_ratings,
+		    AVG(CAST(would_take_again = true AS int)) OVER () as would_take_again_rating,
+		    COALESCE(AVG(difficulty) OVER (), 0) as avg_difficulty,
+		    course.id,
+		    course.name,
+		    course.code,
+		    COALESCE(rt.tags, '[]'::jsonb) as tags,
+		    COALESCE(rd.distribution, '[]'::jsonb) as rating_distribution
 		FROM professor_rating p_r
 		LEFT JOIN course on course.id = p_r.course_id
+		LEFT JOIN rating_tags rt ON rt.professor_rating_id = p_r.id
+		LEFT JOIN rating_distribution rd ON rd.professor_id = p_r.professor_id
 		WHERE ` + strings.Join(where, " AND ") +
 		` ORDER BY created_at DESC ` + `
 		` + FormatLimitOffset(filter.Limit, filter.Offset)
@@ -169,6 +208,8 @@ func getProfessorRatingStats(ctx context.Context, tx *Tx, filter etp.ProfessorRa
 	for rows.Next() {
 		var professorRating etp.ProfessorRating
 		professorRating.Course = &etp.Course{}
+		var tagsJSON []byte
+		var distributionJSON []byte
 		err = rows.Scan(
 			&professorRating.ID,
 			&professorRating.Rating,
@@ -192,13 +233,40 @@ func getProfessorRatingStats(ctx context.Context, tx *Tx, filter etp.ProfessorRa
 			&professorRating.Course.ID,
 			&professorRating.Course.Name,
 			&professorRating.Course.Code,
+			&tagsJSON,
+			&distributionJSON,
 		)
-
-		slog.Info("rating", "profrating", professorRating)
 		if err != nil {
 			return etp.ProfessorRatingsStats{}, err
 		}
+
+		// Unmarshal tags
+		var tags []*etp.Tag
+		if err := json.Unmarshal(tagsJSON, &tags); err != nil {
+			return etp.ProfessorRatingsStats{}, fmt.Errorf("failed to unmarshal tags: %w", err)
+		}
+		professorRating.Tags = tags
+
+		// Parse distribution
+		var distributionItems []struct {
+			Rating int
+			Count  int
+		}
+		if err := json.Unmarshal(distributionJSON, &distributionItems); err != nil {
+			return etp.ProfessorRatingsStats{}, fmt.Errorf("failed to unmarshal distribution: %w", err)
+		}
+
+		var ratingDistribution []*etp.RatingDistribution
+		// Convert to your RatingDistribution format
+		for _, item := range distributionItems {
+			ratingDistribution = append(ratingDistribution, &etp.RatingDistribution{
+				Rating: item.Rating,
+				Count:  item.Count,
+			})
+		}
+		stats.RatingsDistribution = ratingDistribution
 		stats.Ratings = append(stats.Ratings, &professorRating)
+		slog.Info("rating", "profrating", professorRating)
 	}
 
 	if rows.Err() != nil {
@@ -210,40 +278,6 @@ func getProfessorRatingStats(ctx context.Context, tx *Tx, filter etp.ProfessorRa
 	stats.WouldTakeAgainAvg = avgWouldTakeAgainRating
 	stats.DifficultyAvg = avgDifficulty
 
-	// Now query for the rating distribution
-	query = `
-        SELECT rating, COUNT(*) as count
-        FROM professor_rating
-        WHERE professor_id = @professorId
-        GROUP BY rating
-        ORDER BY rating
-    `
-	rows, err = tx.Query(ctx, query, pgx.NamedArgs{"professorId": filter.ProfessorId})
-	if err != nil {
-		slog.Info("rows err after scan for rating distribution", "err", rows.Err())
-		return etp.ProfessorRatingsStats{}, err
-	}
-
-	defer rows.Close()
-
-	var ratingDistribution []*etp.RatingDistribution
-	for rows.Next() {
-		var ratingDistributionItem etp.RatingDistribution
-		err = rows.Scan(
-			&ratingDistributionItem.Rating,
-			&ratingDistributionItem.Count,
-		)
-		if err != nil {
-			return etp.ProfessorRatingsStats{}, err
-		}
-		ratingDistribution = append(ratingDistribution, &ratingDistributionItem)
-	}
-
-	if rows.Err() != nil {
-		return etp.ProfessorRatingsStats{}, err
-	}
-
-	stats.RatingsDistribution = ratingDistribution
 	stats.EnsureFullDistribution()
 
 	return stats, nil
