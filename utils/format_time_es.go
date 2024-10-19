@@ -1,19 +1,16 @@
 package utils
 
 import (
-	"log/slog"
 	"strings"
 	"time"
 )
 
 // FormatTimeInSpanish takes a time and format string, outputs the time in the provided format with Spanish equivalents
 func FormatTimeInSpanish(t string, format string) string {
-	slog.Info("parsing data", "original time", t)
 	parsed, err := time.Parse("2006-01-02 15:04:05.999999 -0700 MST", t)
 	if err != nil {
 		return ""
 	}
-	slog.Info("parsed data", "parsed", parsed)
 	formattedTime := parsed.Format(format)
 
 	// Map of English to Spanish translations for months and days of the week

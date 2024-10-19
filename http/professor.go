@@ -44,9 +44,6 @@ func (s *Server) getProfessor(w http.ResponseWriter, r *http.Request) {
 	}
 	professor.Courses = departments
 
-	slog.Info("Got professor", "id", id, "professor", professor)
-
-	slog.Info("Getting school")
 	// Getting professor's school
 	school, err := s.SchoolService.GetSchoolById(r.Context(), professor.SchoolId)
 	if err != nil {
@@ -56,14 +53,10 @@ func (s *Server) getProfessor(w http.ResponseWriter, r *http.Request) {
 	}
 	professor.School = school
 
-	slog.Info("Got school", "id", professor.School.ID, "school", professor.School)
-
 	// Getting professor ratings
 	ratings, err := s.ProfessorRatingService.GetProfessorRatingsWithStats(r.Context(), etp.ProfessorRatingFilter{
 		ProfessorId: &idInt,
 	})
-
-	slog.Info("Got ratings", "ratings", ratings)
 	if err != nil {
 		slog.Info("error getting ratings", "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -73,8 +66,6 @@ func (s *Server) getProfessor(w http.ResponseWriter, r *http.Request) {
 
 	// Getting professor's most popular tags
 	tags, err := s.ProfessorService.GetProfessorTags(r.Context(), idInt)
-
-	slog.Info("Got tags", "tags", tags)
 	if err != nil {
 		slog.Info("error getting tags", "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
