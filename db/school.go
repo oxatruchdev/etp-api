@@ -192,7 +192,7 @@ func getSchools(ctx context.Context, tx *Tx, filter etp.SchoolFilter) ([]*etp.Sc
 	where, args := []string{"1 = 1"}, pgx.NamedArgs{}
 
 	if filter.SchoolName != nil {
-		where = append(where, "unaccent(name) ilike @name")
+		where = append(where, "unaccent(name) ilike @name or unaccent(abbreviation) ilike @name")
 		args["name"] = "%" + *filter.SchoolName + "%"
 	}
 
