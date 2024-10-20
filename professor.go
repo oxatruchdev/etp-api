@@ -17,10 +17,11 @@ type Professor struct {
 	SchoolId int     `json:"schoolId"`
 
 	// Relations
-	Ratings     []*ProfessorRating `json:"ratings,omitempty" db:"-"`
-	Departments []*Department      `json:"departments,omitempty" db:"-"`
-	Courses     []*Course          `json:"courses,omitempty" db:"-"`
-	PopularTags []*TagWithCount    `json:"popularTags,omitempty" db:"-"`
+	Ratings      []*ProfessorRating `json:"ratings,omitempty" db:"-"`
+	Department   Department         `json:"departments,omitempty" db:"-"`
+	DepartmentID int                `json:"departmentId" db:"department_id"`
+	Courses      []*Course          `json:"courses,omitempty" db:"-"`
+	PopularTags  []*TagWithCount    `json:"popularTags,omitempty" db:"-"`
 
 	// CreatedAt and UpdatedAt are used for tracking
 	CreatedAt time.Time `json:"createdAt" db:"created_at"`

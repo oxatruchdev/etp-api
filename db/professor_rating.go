@@ -191,8 +191,6 @@ func getProfessorRatingStats(ctx context.Context, tx *Tx, filter etp.ProfessorRa
 		` ORDER BY created_at DESC ` + `
 		` + FormatLimitOffset(filter.Limit, filter.Offset)
 
-	slog.Info("querying professors", "query", query, "args", args)
-
 	rows, err := tx.Query(ctx, query, args)
 	if err != nil {
 		return etp.ProfessorRatingsStats{}, err

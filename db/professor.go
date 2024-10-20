@@ -279,14 +279,14 @@ func getProfessors(ctx context.Context, tx *Tx, filter *etp.ProfessorFilter) ([]
 	}
 
 	if filter.ID != nil {
-		where = append(where, "id = @id")
+		where = append(where, "p.id = @id")
 		args["id"] = *filter.ID
 	}
 
 	query := `
 		select 
 			count(*)
-		from professor
+		from professor p
 		where ` + strings.Join(where, " and ")
 
 	var counter int
@@ -301,15 +301,19 @@ func getProfessors(ctx context.Context, tx *Tx, filter *etp.ProfessorFilter) ([]
 
 	query = `
 		select
-			id,
+			p.id,
 			first_name,
 			last_name,
-			school_id,
-			created_at,
-			updated_at,
-			full_name
+			p.school_id,
+			p.created_at,
+			p.updated_at,
+			full_name,
+			d.id as department_id,
+			d.name,
+			d.code
 		from
-			professor
+			professor p
+		join department d on d.id = p.department_id
 		where ` + strings.Join(where, " and ") + `
 		` + FormatLimitOffset(filter.Limit, filter.Offset)
 
@@ -318,17 +322,37 @@ func getProfessors(ctx context.Context, tx *Tx, filter *etp.ProfessorFilter) ([]
 		return nil, 0, err
 	}
 
-	professors, err := pgx.CollectRows(rows, pgx.RowToStructByName[etp.Professor])
-	if err != nil {
-		return nil, 0, err
+	defer rows.Close()
+
+	professors := make([]*etp.Professor, 0)
+
+	for rows.Next() {
+		professor := etp.Professor{}
+		department := etp.Department{}
+		err = rows.Scan(
+			&professor.ID,
+			&professor.FirstName,
+			&professor.LastName,
+			&professor.SchoolId,
+			&professor.CreatedAt,
+			&professor.UpdatedAt,
+			&professor.FullName,
+			&department.ID,
+			&department.Name,
+			&department.Code,
+		)
+		if err != nil {
+			return nil, 0, err
+		}
+		professor.Department = department
+		professors = append(professors, &professor)
 	}
 
-	professorPtrs := make([]*etp.Professor, len(professors))
-	for i := range professors {
-		professorPtrs[i] = &professors[i]
+	if rows.Err() != nil {
+		return nil, 0, rows.Err()
 	}
 
-	return professorPtrs, counter, nil
+	return professors, counter, nil
 }
 
 func createProfessor(ctx context.Context, tx *Tx, professor *etp.Professor) error {
