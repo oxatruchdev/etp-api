@@ -1,0 +1,116 @@
+package web
+
+import "github.com/Evalua-Tu-Profe/etp-api"
+import "github.com/Evalua-Tu-Profe/etp-api/cmd/web/components"
+
+type AddProfessorReviewPageProps struct {
+	Professor *etp.Professor
+	Tags      []*etp.Tag
+}
+
+templ AddProfessorReviewPage(props AddProfessorReviewPageProps) {
+	@Base("Agregar una reseña") {
+		@components.Navbar()
+		<div class="flex flex-col w-full shadow-md">
+			@components.ContentContainer() {
+				<h2>{ props.Professor.FullName }</h2>
+				<div class="flex gap-1">
+					<p>{ props.Professor.Department.Name } · </p>
+					<p>{ props.Professor.School.Name }</p>
+				</div>
+			}
+		</div>
+		@components.ContentContainer() {
+			// Header for professor rating
+			<div class="mt-2">
+				<form>
+					//Course select
+					@components.CardWithShadow() {
+						<div class="flex flex-col">
+							<label for="course" class="text-lg font-semibold mb-2">Clase</label>
+							<select class="select select-bordered w-full md:w-1/2 mt-2" name="course"></select>
+						</div>
+					}
+					@components.CardWithShadow() {
+						<div class="flex flex-col">
+							<label for="course" class="text-lg font-semibold mb-2">Puntuación</label>
+							<div class="rating gap-1">
+								<input type="radio" name="rating" value="1" class="mask mask-heart bg-red-400"/>
+								<input type="radio" name="rating" value="2" class="mask mask-heart bg-orange-400"/>
+								<input type="radio" name="rating" value="3" class="mask mask-heart bg-yellow-400"/>
+								<input type="radio" name="rating" value="4" class="mask mask-heart bg-lime-400"/>
+								<input type="radio" name="rating" value="5" class="mask mask-heart bg-green-400"/>
+							</div>
+						</div>
+					}
+					@components.CardWithShadow() {
+						<div class="flex flex-col">
+							<label for="course" class="text-lg font-semibold mb-2">Dificultad</label>
+							<div class="rating">
+								<input type="radio" name="difficulty" value="1" class="mask mask-star"/>
+								<input type="radio" name="difficulty" value="2" class="mask mask-star"/>
+								<input type="radio" name="difficulty" value="3" class="mask mask-star"/>
+								<input type="radio" name="difficulty" value="4" class="mask mask-star"/>
+								<input type="radio" name="difficulty" value="5" class="mask mask-star"/>
+							</div>
+						</div>
+					}
+					@components.CardWithShadow() {
+						<div class="flex flex-col w-auto">
+							<label for="wouldTakeAgain" class="text-lg font-semibold mb-2">¿Tomarías otra clase con este profesor?</label>
+							<div class="flex">
+								<div class="flex flex-col">
+									<input type="radio" value="true" name="wouldTakeAgain" class="radio radio-primary"/>
+									<p class="text-center">Sí</p>
+								</div>
+								<div class="flex flex-col ml-4">
+									<input type="radio" value="false" name="wouldTakeAgain" class="radio radio-primary"/>
+									<p class="text-center">No</p>
+								</div>
+							</div>
+						</div>
+					}
+					@components.CardWithShadow() {
+						<div class="flex flex-col w-auto">
+							<label for="textBookRequired" class="text-lg font-semibold mb-2">¿Es libro requerido?</label>
+							<div class="flex">
+								<div class="flex flex-col">
+									<input type="radio" value="true" name="textBookRequired" class="radio radio-primary"/>
+									<p class="text-center">Sí</p>
+								</div>
+								<div class="flex flex-col ml-4">
+									<input type="radio" value="false" name="textBookRequired" class="radio radio-primary"/>
+									<p class="text-center">No</p>
+								</div>
+							</div>
+						</div>
+					}
+					@components.CardWithShadow() {
+						<div class="flex flex-col w-auto">
+							<label for="mandatoryAttendance" class="text-lg font-semibold mb-2">¿Es la asistencia obligatoria?</label>
+							<div class="flex">
+								<div class="flex flex-col">
+									<input type="radio" value="true" name="mandatoryAttendance" class="radio radio-primary"/>
+									<p class="text-center">Sí</p>
+								</div>
+								<div class="flex flex-col ml-4">
+									<input type="radio" value="false" name="mandatoryAttendance" class="radio radio-primary"/>
+									<p class="text-center">No</p>
+								</div>
+							</div>
+						</div>
+					}
+					@components.CardWithShadow() {
+						<div class="flex flex-col w-auto">
+							<label for="mandatoryAttendance" class="text-lg font-semibold mb-2"></label>
+							for _, tag := range props.Tags {
+								<p>{ tag.Name }</p>
+							}
+						</div>
+					}
+				</form>
+			</div>
+			<div class="mt-2"></div>
+		}
+	}
+}

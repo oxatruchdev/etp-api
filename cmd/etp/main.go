@@ -49,6 +49,7 @@ func main() {
 	courseService := db.NewCourseService(m.DB)
 	userService := db.NewUserService(m.DB)
 	roleService := db.NewRoleService(m.DB)
+	tagService := db.NewTagService(m.DB)
 
 	m.HTTPServer.CountryService = countryService
 	m.HTTPServer.SchoolService = schoolService
@@ -59,6 +60,7 @@ func main() {
 	m.HTTPServer.CourseService = courseService
 	m.HTTPServer.UserService = userService
 	m.HTTPServer.RoleService = roleService
+	m.HTTPServer.TagService = tagService
 
 	m.HTTPServer.Config = m.Config
 

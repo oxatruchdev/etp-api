@@ -11,11 +11,11 @@ type Tag struct {
 	Name string `json:"name"`
 
 	// Relations
-	ProfessorRatings []*ProfessorRating
-	SchoolRatings    []*SchoolRating
+	ProfessorRatings []*ProfessorRating `json:"professorRatings" db:"-"`
+	SchoolRatings    []*SchoolRating    `json:"schoolRatings" db:"-"`
 
-	CreatedAt pgtype.Timestamptz
-	UpdatedAt pgtype.Timestamptz
+	CreatedAt pgtype.Timestamptz `json:"createdAt" db:"created_at"`
+	UpdatedAt pgtype.Timestamptz `json:"updatedAt" db:"updated_at"`
 }
 
 type TagWithCount struct {

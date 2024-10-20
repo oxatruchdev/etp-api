@@ -22,7 +22,6 @@ func (s *TagService) GetTags(ctx context.Context) ([]*etp.Tag, error) {
 	if err != nil {
 		return nil, err
 	}
-	tx.Rollback(ctx)
 
 	tags, err := getTags(ctx, tx)
 	if err != nil {
@@ -73,7 +72,7 @@ func createTag(ctx context.Context, tx *Tx, name string) error {
 
 func getTags(ctx context.Context, tx *Tx) ([]*etp.Tag, error) {
 	query := `
-		select id, name
+		select id, name, created_at, updated_at
 		from tag
 		order by name
 	`
@@ -82,22 +81,16 @@ func getTags(ctx context.Context, tx *Tx) ([]*etp.Tag, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
 
-	var tags []*etp.Tag
-	for rows.Next() {
-		var tag etp.Tag
-
-		err := rows.Scan(
-			&tag.ID,
-			&tag.Name,
-		)
-		if err != nil {
-			return nil, err
-		}
-
-		tags = append(tags, &tag)
+	tags, err := pgx.CollectRows(rows, pgx.RowToStructByName[etp.Tag])
+	if err != nil {
+		return nil, err
 	}
 
-	return tags, nil
+	tagsPtrs := make([]*etp.Tag, len(tags))
+	for i := range tags {
+		tagsPtrs[i] = &tags[i]
+	}
+
+	return tagsPtrs, nil
 }

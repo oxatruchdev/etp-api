@@ -25,6 +25,7 @@ type Server struct {
 	SchoolRatingService    etp.SchoolRatingService
 	UserService            etp.UserService
 	RoleService            etp.RoleService
+	TagService             etp.TagService
 
 	Config *etp.Config
 }
