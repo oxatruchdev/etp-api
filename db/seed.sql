@@ -140,50 +140,47 @@ INSERT INTO course (name, code, credits, department_id, school_id) VALUES
 ('Optimización y Control', 'MA301', 4, 41, 18);
 
 -- Seed data for professor table
-INSERT INTO professor (first_name, last_name, full_name, school_id) VALUES
-('João', 'Silva', 'João Silva', 1),
-('Ana', 'Rodrigues', 'Ana Rodrigues', 1),
-('Carlos', 'Oliveira', 'Carlos Oliveira', 1),
-('Mariana', 'Santos', 'Mariana Santos', 2),
-('Pedro', 'Ferreira', 'Pedro Ferreira', 2),
-('Luísa', 'Carvalho', 'Luísa Carvalho', 2),
-('Ricardo', 'Almeida', 'Ricardo Almeida', 3),
-('Beatriz', 'Lima', 'Beatriz Lima', 3),
-('María', 'González', 'María González', 4),
-('Alejandro', 'López', 'Alejandro López', 4),
-('Sofía', 'Ramírez', 'Sofía Ramírez', 4),
-('Javier', 'Hernández', 'Javier Hernández', 5),
-('Isabella', 'Martínez', 'Isabella Martínez', 5),
-('Diego', 'Torres', 'Diego Torres', 6),
-('Valentina', 'Flores', 'Valentina Flores', 6),
-('Martín', 'Rodríguez', 'Martín Rodríguez', 7),
-('Lucía', 'Fernández', 'Lucía Fernández', 7),
-('Mateo', 'Gómez', 'Mateo Gómez', 7),
-('Camila', 'Pérez', 'Camila Pérez', 8),
-('Sebastián', 'Díaz', 'Sebastián Díaz', 8),
-('Andrés', 'Vargas', 'Andrés Vargas', 9),
-('Daniela', 'Morales', 'Daniela Morales', 9),
-('Felipe', 'Castro', 'Felipe Castro', 10),
-('Catalina', 'Rojas', 'Catalina Rojas', 10),
-('Joaquín', 'Muñoz', 'Joaquín Muñoz', 11),
-('Antonia', 'Sepúlveda', 'Antonia Sepúlveda', 11),
-('Gabriel', 'Contreras', 'Gabriel Contreras', 12),
-('Isidora', 'Pinto', 'Isidora Pinto', 12),
-('Miguel', 'Chávez', 'Miguel Chávez', 13),
-('Valeria', 'Mendoza', 'Valeria Mendoza', 13),
-('Rodrigo', 'Quispe', 'Rodrigo Quispe', 14),
-('Miguel', 'Chávez', 'Miguel Chávez', 13),
-('Valeria', 'Mendoza', 'Valeria Mendoza', 13),
-('Rodrigo', 'Quispe', 'Rodrigo Quispe', 14),
-('Adriana', 'Huamán', 'Adriana Huamán', 14),
-('Gonzalo', 'Silva', 'Gonzalo Silva', 15),
-('Cecilia', 'Fernández', 'Cecilia Fernández', 15),
-('Martín', 'Sosa', 'Martín Sosa', 16),
-('Laura', 'Giménez', 'Laura Giménez', 16),
-('Andrés', 'Benítez', 'Andrés Benítez', 17),
-('Gabriela', 'Espinoza', 'Gabriela Espinoza', 17),
-('Santiago', 'Córdova', 'Santiago Córdova', 18),
-('Camila', 'Andrade', 'Camila Andrade', 18);
+INSERT INTO professor (first_name, last_name, full_name, school_id, department_id) VALUES
+('João', 'Silva', 'João Silva', 1, 1),          -- EC
+('Ana', 'Rodrigues', 'Ana Rodrigues', 1, 2),    -- FIS
+('Carlos', 'Oliveira', 'Carlos Oliveira', 1, 3), -- MED
+('Mariana', 'Santos', 'Mariana Santos', 2, 5),   -- BIO
+('Pedro', 'Ferreira', 'Pedro Ferreira', 2, 6),   -- QUI
+('Luísa', 'Carvalho', 'Luísa Carvalho', 2, 7),  -- MAT
+('Ricardo', 'Almeida', 'Ricardo Almeida', 3, 8), -- EE
+('Beatriz', 'Lima', 'Beatriz Lima', 3, 9),       -- DIR
+('María', 'González', 'María González', 4, 11),   -- IC
+('Alejandro', 'López', 'Alejandro López', 4, 12), -- FIL
+('Sofía', 'Ramírez', 'Sofía Ramírez', 4, 13),    -- ARQ
+('Javier', 'Hernández', 'Javier Hernández', 5, 14), -- ADM
+('Isabella', 'Martínez', 'Isabella Martínez', 5, 15), -- MEC
+('Diego', 'Torres', 'Diego Torres', 6, 16),       -- COM
+('Valentina', 'Flores', 'Valentina Flores', 6, 17), -- SOC
+('Martín', 'Rodríguez', 'Martín Rodríguez', 7, 18), -- MED
+('Lucía', 'Fernández', 'Lucía Fernández', 7, 19),   -- INF
+('Mateo', 'Gómez', 'Mateo Gómez', 7, 18),          -- MED
+('Camila', 'Pérez', 'Camila Pérez', 8, 20),        -- CP
+('Sebastián', 'Díaz', 'Sebastián Díaz', 8, 21),    -- AGR
+('Andrés', 'Vargas', 'Andrés Vargas', 9, 22),      -- IA
+('Daniela', 'Morales', 'Daniela Morales', 9, 23),  -- ART
+('Felipe', 'Castro', 'Felipe Castro', 10, 24),      -- ECO
+('Catalina', 'Rojas', 'Catalina Rojas', 10, 25),   -- II
+('Joaquín', 'Muñoz', 'Joaquín Muñoz', 11, 26),     -- VET
+('Antonia', 'Sepúlveda', 'Antonia Sepúlveda', 11, 27), -- AST
+('Gabriel', 'Contreras', 'Gabriel Contreras', 12, 28), -- DER
+('Isidora', 'Pinto', 'Isidora Pinto', 12, 29),     -- GEO
+('Miguel', 'Chávez', 'Miguel Chávez', 13, 30),      -- LIN
+('Valeria', 'Mendoza', 'Valeria Mendoza', 13, 31),  -- FAR
+('Rodrigo', 'Quispe', 'Rodrigo Quispe', 14, 32),    -- ANT
+('Adriana', 'Huamán', 'Adriana Huamán', 14, 33),    -- IS
+('Gonzalo', 'Silva', 'Gonzalo Silva', 15, 34),      -- ODO
+('Cecilia', 'Fernández', 'Cecilia Fernández', 15, 35), -- EDU
+('Martín', 'Sosa', 'Martín Sosa', 16, 36),         -- DG
+('Laura', 'Giménez', 'Laura Giménez', 16, 37),     -- BIO
+('Andrés', 'Benítez', 'Andrés Benítez', 17, 38),   -- RI
+('Gabriela', 'Espinoza', 'Gabriela Espinoza', 17, 39), -- GAS
+('Santiago', 'Córdova', 'Santiago Córdova', 18, 40), -- IP
+('Camila', 'Andrade', 'Camila Andrade', 18, 41);    -- MA
 
 -- Seed data for professor_rating table
 INSERT INTO professor_rating (rating, difficulty, comment, would_take_again, mandatory_attendance, grade, textbook_required, is_approved, approvals_count, professor_id, course_id) VALUES
@@ -231,13 +228,6 @@ INSERT INTO professor_rating (rating, difficulty, comment, would_take_again, man
 -- Seed data for professor_course table
 INSERT INTO professor_course (professor_id, course_id)
 SELECT professor_id, course_id FROM professor_rating;
-
--- Seed data for professor_department table
-INSERT INTO professor_department (professor_id, department_id)
-SELECT DISTINCT p.id, c.department_id
-FROM professor p
-JOIN professor_course pc ON p.id = pc.professor_id
-JOIN course c ON pc.course_id = c.id;
 
 -- Seed data for role table
 INSERT INTO role (name, display_name) VALUES
