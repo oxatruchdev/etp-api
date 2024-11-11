@@ -21,16 +21,23 @@ func NewProfessorRatingService(db *DB) *ProfessorRatingService {
 	}
 }
 
-func (prs *ProfessorRatingService) CreateProfessorRating(ctx context.Context, professorRating *etp.ProfessorRating) error {
+func (prs *ProfessorRatingService) CreateProfessorRating(ctx context.Context, professorRating *etp.ProfessorRating, tagIds []int) error {
 	tx, err := prs.db.BeginTx(ctx)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback(ctx)
 
-	err = createProfessorRating(ctx, tx, professorRating)
+	err, id := createProfessorRating(ctx, tx, professorRating)
 	if err != nil {
 		return err
+	}
+
+	if len(tagIds) > 0 {
+		err = associateProfessorRatingTags(ctx, tx, id, tagIds)
+		if err != nil {
+			return err
+		}
 	}
 
 	return tx.Commit(ctx)
@@ -123,6 +130,11 @@ func getProfessorRatingStats(ctx context.Context, tx *Tx, filter etp.ProfessorRa
 		args["courseId"] = *v
 	}
 
+	if v := filter.IsApproved; v {
+		where = append(where, "p_r.is_approved = @isApproved")
+		args["isApproved"] = v
+	}
+
 	// First, get the professor ratings with window functions for avg and total count
 	query := `
 		WITH 
@@ -153,8 +165,9 @@ func getProfessorRatingStats(ctx context.Context, tx *Tx, filter etp.ProfessorRa
 				professor_id,
 				rating, 
 				COUNT(*) as count
-			    FROM professor_rating
-			    GROUP BY professor_id, rating
+				FROM professor_rating p_r
+				WHERE ` + strings.Join(where, " AND ") + ` 
+				GROUP BY professor_id, rating
 			) rd
 			GROUP BY professor_id
 		    )
@@ -496,11 +509,35 @@ func getProfessorRatings(ctx context.Context, tx *Tx, filter *etp.ProfessorRatin
 	return professorRatingsPtr, n, nil
 }
 
-func createProfessorRating(ctx context.Context, tx *Tx, professorRating *etp.ProfessorRating) error {
+func createProfessorRating(ctx context.Context, tx *Tx, professorRating *etp.ProfessorRating) (error, int) {
 	query := `
-		INSERT INTO professor_rating (rating, comment, would_take_again, mandatory_attendance, grade, textbook_required, 
-			is_approved, approvals_count, created_at, updated_at, professor_id, course_id)
-		VALUES (@rating, @comment, @wouldTakeAgain, @mandatoryAttendance, @grade, @textbookRequired, @isApproved, @approvalsCount, NOW(), NOW(), @professorId, @courseId)
+		INSERT INTO professor_rating (
+			rating, 
+			comment, 
+			would_take_again, 
+			mandatory_attendance, 
+			grade, 
+			textbook_required, 
+			is_approved, 
+			approvals_count, 
+			professor_id, 
+			course_id,
+			difficulty
+		)
+		VALUES (
+			@rating, 
+			@comment, 
+			@wouldTakeAgain, 
+			@mandatoryAttendance, 
+			@grade, 
+			@textbookRequired, 
+			@isApproved, 
+			@approvalsCount, 
+			@professorId, 
+			@courseId,
+			@difficulty
+		) 
+		returning id
 	`
 
 	args := pgx.NamedArgs{
@@ -514,11 +551,27 @@ func createProfessorRating(ctx context.Context, tx *Tx, professorRating *etp.Pro
 		"approvalsCount":      professorRating.ApprovalsCount,
 		"professorId":         professorRating.ProfessorId,
 		"courseId":            professorRating.CourseId,
+		"difficulty":          professorRating.Difficulty,
 	}
 
-	_, err := tx.Exec(ctx, query, args)
+	var id int
+	err := tx.QueryRow(ctx, query, args).Scan(&id)
 	if err != nil {
-		return err
+		return err, 0
+	}
+
+	return nil, id
+}
+
+func associateProfessorRatingTags(ctx context.Context, tx *Tx, id int, tags []int) error {
+	for _, tagId := range tags {
+		_, err := tx.Exec(ctx, `
+			INSERT INTO professor_rating_tag (professor_rating_id, tag_id)
+			VALUES ($1, $2)
+		`, id, tagId)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

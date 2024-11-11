@@ -79,6 +79,7 @@ type ProfessorRatingFilter struct {
 	ProfessorRatingId *int `json:"id" query:"id"`
 	ProfessorId       *int `json:"professorId" query:"professorId"`
 	CourseId          *int `json:"courseId" query:"courseId"`
+	IsApproved        bool
 
 	Offset int `json:"offset" query:"offset"`
 	Limit  int `json:"limit" query:"limit"`
@@ -86,7 +87,7 @@ type ProfessorRatingFilter struct {
 
 type ProfessorRatingService interface {
 	// Creates a new professor rating
-	CreateProfessorRating(ctx context.Context, professorRating *ProfessorRating) error
+	CreateProfessorRating(ctx context.Context, professorRating *ProfessorRating, tagIds []int) error
 
 	// Approves a professor rating
 	// It is necessary to have at least 3 approvals in order to be approved

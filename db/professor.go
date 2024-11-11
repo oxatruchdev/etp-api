@@ -144,6 +144,7 @@ func getProfessorPopularTags(ctx context.Context, tx *Tx, id int) ([]*etp.TagWit
 			JOIN tag t ON t.id = prt.tag_id
 			JOIN professor_rating pr ON pr.id = prt.professor_rating_id
 			WHERE pr.professor_id = @professorId
+			AND pr.is_approved = true
 			GROUP BY t.id, t.name, pr.professor_id
 			ORDER BY usage_count DESC
 			LIMIT 3
