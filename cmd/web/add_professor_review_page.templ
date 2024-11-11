@@ -1,7 +1,10 @@
 package web
 
-import "github.com/Evalua-Tu-Profe/etp-api"
-import "github.com/Evalua-Tu-Profe/etp-api/cmd/web/components"
+import (
+	"github.com/Evalua-Tu-Profe/etp-api"
+	"github.com/Evalua-Tu-Profe/etp-api/cmd/web/components"
+	"fmt"
+)
 
 type AddProfessorReviewPageProps struct {
 	Professor *etp.Professor
@@ -12,28 +15,37 @@ templ AddProfessorReviewPage(props AddProfessorReviewPageProps) {
 	@Base("Agregar una reseña") {
 		@components.Navbar()
 		<div class="flex flex-col w-full shadow-md">
-			@components.ContentContainer() {
-				<h2>{ props.Professor.FullName }</h2>
-				<div class="flex gap-1">
-					<p>{ props.Professor.Department.Name } · </p>
-					<p>{ props.Professor.School.Name }</p>
+			<div class="p-8 flex flex-col items-center md:p-0 md:pb-6 md:pt-6 md:max-w-screen-md md:mx-auto md:my-0">
+				<h2 class="text-2xl font-semibold">{ props.Professor.FullName }</h2>
+				<div class="flex flex-col items-center gap-1 mt-2">
+					<p class="text-md">{ props.Professor.Department.Name } </p>
+					<p class="text-md">{ props.Professor.School.Name }</p>
 				</div>
-			}
+			</div>
 		</div>
 		@components.ContentContainer() {
 			// Header for professor rating
-			<div class="mt-2">
-				<form>
+			<div class="mt-2" x-data="tags">
+				<form
+					hx-post={ fmt.Sprintf("/professor/%d/review", props.Professor.ID) }
+					hx-trigger="submit"
+					hx-vals={ fmt.Sprintf("js:{\"tags\": Alpine.store('tagIds')}") }
+				>
 					//Course select
 					@components.CardWithShadow() {
 						<div class="flex flex-col">
 							<label for="course" class="text-lg font-semibold mb-2">Clase</label>
-							<select class="select select-bordered w-full md:w-1/2 mt-2" name="course"></select>
+							<select class="select select-bordered w-full md:w-1/2 mt-2" name="course">
+								<option selected value="">Selecciona una clase</option>
+								for _, course := range props.Professor.Courses {
+									<option value={ fmt.Sprintf("%d", course.ID) }>{ course.Name }</option>
+								}
+							</select>
 						</div>
 					}
 					@components.CardWithShadow() {
 						<div class="flex flex-col">
-							<label for="course" class="text-lg font-semibold mb-2">Puntuación</label>
+							<label for="rating" class="text-lg font-semibold mb-2">Puntuación</label>
 							<div class="rating gap-1">
 								<input type="radio" name="rating" value="1" class="mask mask-heart bg-red-400"/>
 								<input type="radio" name="rating" value="2" class="mask mask-heart bg-orange-400"/>
@@ -45,7 +57,7 @@ templ AddProfessorReviewPage(props AddProfessorReviewPageProps) {
 					}
 					@components.CardWithShadow() {
 						<div class="flex flex-col">
-							<label for="course" class="text-lg font-semibold mb-2">Dificultad</label>
+							<label for="difficulty" class="text-lg font-semibold mb-2">Dificultad</label>
 							<div class="rating">
 								<input type="radio" name="difficulty" value="1" class="mask mask-star"/>
 								<input type="radio" name="difficulty" value="2" class="mask mask-star"/>
@@ -72,7 +84,7 @@ templ AddProfessorReviewPage(props AddProfessorReviewPageProps) {
 					}
 					@components.CardWithShadow() {
 						<div class="flex flex-col w-auto">
-							<label for="textBookRequired" class="text-lg font-semibold mb-2">¿Es libro requerido?</label>
+							<label for="textBookRequired" class="text-lg font-semibold mb-2" aria-required="true">¿Es libro requerido?</label>
 							<div class="flex">
 								<div class="flex flex-col">
 									<input type="radio" value="true" name="textBookRequired" class="radio radio-primary"/>
@@ -102,15 +114,57 @@ templ AddProfessorReviewPage(props AddProfessorReviewPageProps) {
 					}
 					@components.CardWithShadow() {
 						<div class="flex flex-col w-auto">
-							<label for="mandatoryAttendance" class="text-lg font-semibold mb-2"></label>
-							for _, tag := range props.Tags {
-								<p>{ tag.Name }</p>
-							}
+							<label for="mandatoryAttendance" class="text-lg font-semibold mb-2">
+								Cualidades
+							</label>
+							<div class="flex flex-wrap">
+								for _, tag := range props.Tags {
+									<button
+										x-on:click={ fmt.Sprintf("toggleTag(%d)", tag.ID) }
+										class="badge badge-lg badge-outline mt-2 cursor-pointer mr-2 h-auto"
+										:class={ fmt.Sprintf("$store.tagIds.includes(%d) ? 'badge-info' : 'badge-outline' ", tag.ID) }
+										type="button"
+									>
+										{ tag.Name }
+									</button>
+								}
+							</div>
+							<p class="text-error text-end mt-2" x-show={ "hasMaxTags" }>
+								Solo se pueden agregar hasta 3 cualidades
+							</p>
 						</div>
 					}
+					<div class="flex w-100 md:w-auto md:justify-end">
+						<button
+							class="btn btn-primary mt-4"
+						>
+							Añadir evaluación
+						</button>
+					</div>
 				</form>
 			</div>
 			<div class="mt-2"></div>
 		}
+		<script>
+			document.addEventListener('alpine:init', () => {
+				Alpine.store('tagIds', []);
+				Alpine.data('tags', () => ({
+						hasMaxTags: false,
+						toggleTag(tagId) {
+							if (this.$store.tagIds.includes(tagId)) {
+								if (this.$store.tagIds.length === 3) this.hasMaxTags = false;
+								this.$store.tagIds.splice(this.$store.tagIds.indexOf(tagId), 1)
+							} else {
+								// We can't have more than 3 tags
+								if (this.$store.tagIds.length === 3 ) {
+									this.hasMaxTags = true
+									return;
+								}
+								this.$store.tagIds.push(tagId)
+							}
+						}
+				}))
+			})
+	</script>
 	}
 }
