@@ -38,12 +38,12 @@ func (s *Server) getProfessor(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Getting courses for that professor
-	departments, err := s.ProfessorService.GetProfessorCourses(r.Context(), idInt)
+	courses, err := s.ProfessorService.GetProfessorCourses(r.Context(), idInt)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	professor.Courses = departments
+	professor.Courses = courses
 
 	// Getting professor's school
 	school, err := s.SchoolService.GetSchoolById(r.Context(), professor.SchoolId)
@@ -146,6 +146,16 @@ func (s *Server) HandleAddProfessorReview(w http.ResponseWriter, r *http.Request
 		return
 	}
 	professor.School = school
+
+	// Getting courses for the professor's department
+	courses, _, err := s.CourseService.GetCourses(r.Context(), etp.CourseFilter{
+		DepartmentId: &professor.Department.ID,
+	})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	professor.Courses = courses
 
 	// Getting tags
 	tags, err := s.TagService.GetTags(r.Context())
