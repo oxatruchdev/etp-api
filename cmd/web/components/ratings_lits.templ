@@ -117,9 +117,9 @@ templ RatingsList(ratings []*etp.ProfessorRating, count int) {
 								{ rating.Comment }
 							</div>
 						</div>
-						<div class="flex flex-col md:flex-row mt-2">
+						<div class="flex flex-col flex-wrap gap-y-2 md:flex-row mt-2">
 							for _, tag := range rating.Tags {
-								<div class="badge badge-outline badge-lg mt-2 md:mt-0 md:mr-4">
+								<div class="badge badge-outline h-auto badge-lg mt-2 md:mt-0 md:mr-4 max-w-80">
 									{ tag.Name }
 								</div>
 							}

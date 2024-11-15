@@ -1,6 +1,7 @@
 package http
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -9,6 +10,7 @@ import (
 	"github.com/Evalua-Tu-Profe/etp-api"
 	"github.com/Evalua-Tu-Profe/etp-api/cmd/web"
 	"github.com/Evalua-Tu-Profe/etp-api/cmd/web/components"
+	"github.com/Evalua-Tu-Profe/etp-api/cmd/web/partials"
 )
 
 func (s *Server) registerProfessorRoutes() {
@@ -141,35 +143,8 @@ func (s *Server) HandleAddProfessorReview(w http.ResponseWriter, r *http.Request
 	}
 	slog.Info("Get professor", "id", id)
 
-	professor, err := s.ProfessorService.GetProfessorById(r.Context(), idInt)
+	professor, tags, err := s.getProfessorWithTags(r.Context(), idInt)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	// Getting professor's school
-	school, err := s.SchoolService.GetSchoolById(r.Context(), professor.SchoolId)
-	if err != nil {
-		slog.Info("error getting school", "error", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	professor.School = school
-
-	// Getting courses for the professor's department
-	courses, _, err := s.CourseService.GetCourses(r.Context(), etp.CourseFilter{
-		DepartmentId: &professor.Department.ID,
-	})
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	professor.Courses = courses
-
-	// Getting tags
-	tags, err := s.TagService.GetTags(r.Context())
-	if err != nil {
-		slog.Info("error getting tags", "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -213,13 +188,13 @@ func (s *Server) CreateProfessorRating(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if rating < 1 || rating > 5 {
-		errors["rating"] = "Rating must be between 1 and 5"
+		errors["rating"] = "Esta campo es requerido"
 	}
 
 	// Validating difficulty
 	difficulty, err := strconv.Atoi(r.FormValue("difficulty"))
 	if err != nil {
-		errors["difficulty"] = "Difficulty must be a number"
+		errors["difficulty"] = "Esta campo es requerido"
 	}
 
 	fmt.Println("Difficulty", difficulty)
@@ -231,41 +206,63 @@ func (s *Server) CreateProfessorRating(w http.ResponseWriter, r *http.Request) {
 	// Validating would take again
 	wouldTakeAgain := r.FormValue("wouldTakeAgain")
 	if wouldTakeAgain != "true" && wouldTakeAgain != "false" {
-		errors["wouldTakeAgain"] = "Would take again must be true or false"
+		errors["wouldTakeAgain"] = "Esta campo es requerido"
 	}
 
 	// Validating course
 	courseId, err := strconv.Atoi(r.FormValue("course"))
 	if err != nil {
-		errors["course"] = "Course must be a number"
+		errors["course"] = "Esta campo es requerido"
 	}
 
 	// Validating comment
 	comment := r.FormValue("comment")
+	if comment == "" {
+		errors["comment"] = "Esta campo es requerido"
+	}
 
 	// Validating textbook required
-	textbookRequired := r.FormValue("textBookRequired")
+	textbookRequired := r.FormValue("textbookRequired")
 	if textbookRequired != "true" && textbookRequired != "false" {
-		errors["textbookRequired"] = "Textbook required must be true or false"
+		errors["textbookRequired"] = "Esta campo es requerido"
 	}
 
 	// Validating mandatory attendance
 	mandatoryAttendance := r.FormValue("mandatoryAttendance")
 	if mandatoryAttendance != "true" && mandatoryAttendance != "false" {
-		errors["mandatoryAttendance"] = "Mandatory attendance must be true or false"
+		errors["mandatoryAttendance"] = "Esta campo es requerido"
 	}
 
 	// Handle multiple tags
 	var tagIds []int
 	formTags := r.Form["tags"] // This gets all tag values
 
-	for _, tag := range formTags {
-		tagId, err := strconv.Atoi(tag)
-		if err != nil {
-			errors["tags"] = "Tags must be numbers"
-			break
+	if len(formTags) == 0 {
+		errors["tags"] = "Seleccione al menos una cualidad"
+	} else {
+		for _, tag := range formTags {
+			tagId, err := strconv.Atoi(tag)
+			if err != nil {
+				errors["tags"] = "Tags must be numbers"
+				break
+			}
+			tagIds = append(tagIds, tagId)
 		}
-		tagIds = append(tagIds, tagId)
+	}
+
+	if len(errors) > 0 {
+		professor, tags, err := s.getProfessorWithTags(r.Context(), idInt)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		Render(w, r, 200, partials.AddProfessorReviewForm(partials.AddProfessorReviewFormProps{
+			Professor: professor,
+			Tags:      tags,
+			Errors:    errors,
+		}))
+		return
 	}
 
 	err = s.ProfessorRatingService.CreateProfessorRating(r.Context(), &etp.ProfessorRating{
@@ -282,4 +279,37 @@ func (s *Server) CreateProfessorRating(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
+	Render(w, r, 200, components.SuccessfulReview())
+}
+
+func (s *Server) getProfessorWithTags(ctx context.Context, id int) (*etp.Professor, []*etp.Tag, error) {
+	professor, err := s.ProfessorService.GetProfessorById(ctx, id)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// Getting professor's school
+	school, err := s.SchoolService.GetSchoolById(ctx, professor.SchoolId)
+	if err != nil {
+		return nil, nil, err
+	}
+	professor.School = school
+
+	// Getting courses for the professor's department
+	courses, _, err := s.CourseService.GetCourses(ctx, etp.CourseFilter{
+		DepartmentId: &professor.Department.ID,
+	})
+	if err != nil {
+		return nil, nil, err
+	}
+	professor.Courses = courses
+
+	// Getting tags
+	tags, err := s.TagService.GetTags(ctx)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return professor, tags, nil
 }

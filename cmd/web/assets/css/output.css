@@ -2383,6 +2383,20 @@ html {
   padding-right: 0.688rem;
 }
 
+.btn-md {
+  height: 3rem;
+  min-height: 3rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  font-size: 0.875rem;
+}
+
+.btn-square:where(.btn-md) {
+  height: 3rem;
+  width: 3rem;
+  padding: 0px;
+}
+
 .btn-circle:where(.btn-xs) {
   height: 1.5rem;
   width: 1.5rem;
@@ -2614,6 +2628,11 @@ html {
   display: none;
 }
 
+.size-36 {
+  width: 9rem;
+  height: 9rem;
+}
+
 .size-6 {
   width: 1.5rem;
   height: 1.5rem;
@@ -2681,6 +2700,10 @@ html {
 
 .w-full {
   width: 100%;
+}
+
+.max-w-80 {
+  max-width: 20rem;
 }
 
 .max-w-xs {
@@ -2753,6 +2776,10 @@ html {
 
 .gap-4 {
   gap: 1rem;
+}
+
+.gap-y-2 {
+  row-gap: 0.5rem;
 }
 
 .space-y-6 > :not([hidden]) ~ :not([hidden]) {
@@ -2956,6 +2983,11 @@ html {
   color: rgb(220 38 38 / var(--tw-text-opacity));
 }
 
+.text-success {
+  --tw-text-opacity: 1;
+  color: var(--fallback-su,oklch(var(--su)/var(--tw-text-opacity)));
+}
+
 .shadow {
   --tw-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
   --tw-shadow-colored: 0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);
@@ -3058,6 +3090,10 @@ html {
 
   .md\:mt-4 {
     margin-top: 1rem;
+  }
+
+  .md\:mt-8 {
+    margin-top: 2rem;
   }
 
   .md\:flex {

@@ -3,7 +3,7 @@ package web
 import (
 	"github.com/Evalua-Tu-Profe/etp-api"
 	"github.com/Evalua-Tu-Profe/etp-api/cmd/web/components"
-	"fmt"
+	"github.com/Evalua-Tu-Profe/etp-api/cmd/web/partials"
 )
 
 type AddProfessorReviewPageProps struct {
@@ -23,141 +23,7 @@ templ AddProfessorReviewPage(props AddProfessorReviewPageProps) {
 				</div>
 			</div>
 		</div>
-		@components.ContentContainer() {
-			// Header for professor rating
-			<div class="mt-2" x-data="tags">
-				<form
-					hx-post={ fmt.Sprintf("/professor/%d/review", props.Professor.ID) }
-					hx-trigger="submit"
-					hx-vals={ fmt.Sprintf("js:{\"tags\": Alpine.store('tagIds')}") }
-				>
-					//Course select
-					@components.CardWithShadow() {
-						<div class="flex flex-col">
-							<label for="course" class="text-lg font-semibold mb-2">Clase</label>
-							<select class="select select-bordered w-full md:w-1/2 mt-2" name="course">
-								<option selected value="">Selecciona una clase</option>
-								for _, course := range props.Professor.Courses {
-									<option value={ fmt.Sprintf("%d", course.ID) }>{ fmt.Sprintf("%s - %s", course.Code, course.Name) }</option>
-								}
-							</select>
-						</div>
-					}
-					@components.CardWithShadow() {
-						<div class="flex flex-col">
-							<label for="rating" class="text-lg font-semibold mb-2">Puntuación</label>
-							<div class="rating gap-1">
-								<input type="radio" name="rating" value="1" class="mask mask-heart bg-red-400"/>
-								<input type="radio" name="rating" value="2" class="mask mask-heart bg-orange-400"/>
-								<input type="radio" name="rating" value="3" class="mask mask-heart bg-yellow-400" checked="checked"/>
-								<input type="radio" name="rating" value="4" class="mask mask-heart bg-lime-400"/>
-								<input type="radio" name="rating" value="5" class="mask mask-heart bg-green-400"/>
-							</div>
-						</div>
-					}
-					@components.CardWithShadow() {
-						<div class="flex flex-col">
-							<label for="difficulty" class="text-lg font-semibold mb-2">Dificultad</label>
-							<div class="rating">
-								<input type="radio" name="difficulty" value="1" class="mask mask-star"/>
-								<input type="radio" name="difficulty" value="2" class="mask mask-star"/>
-								<input type="radio" name="difficulty" value="3" class="mask mask-star" checked="checked"/>
-								<input type="radio" name="difficulty" value="4" class="mask mask-star"/>
-								<input type="radio" name="difficulty" value="5" class="mask mask-star"/>
-							</div>
-						</div>
-					}
-					@components.CardWithShadow() {
-						<div class="flex flex-col w-auto">
-							<label for="wouldTakeAgain" class="text-lg font-semibold mb-2">¿Tomarías otra clase con este profesor?</label>
-							<div class="flex">
-								<div class="flex flex-col">
-									<input type="radio" value="true" name="wouldTakeAgain" class="radio radio-primary"/>
-									<p class="text-center">Sí</p>
-								</div>
-								<div class="flex flex-col ml-4">
-									<input type="radio" value="false" name="wouldTakeAgain" class="radio radio-primary"/>
-									<p class="text-center">No</p>
-								</div>
-							</div>
-						</div>
-					}
-					@components.CardWithShadow() {
-						<div class="flex flex-col w-auto">
-							<label for="textBookRequired" class="text-lg font-semibold mb-2" aria-required="true">¿Es libro requerido?</label>
-							<div class="flex">
-								<div class="flex flex-col">
-									<input type="radio" value="true" name="textBookRequired" class="radio radio-primary"/>
-									<p class="text-center">Sí</p>
-								</div>
-								<div class="flex flex-col ml-4">
-									<input type="radio" value="false" name="textBookRequired" class="radio radio-primary"/>
-									<p class="text-center">No</p>
-								</div>
-							</div>
-						</div>
-					}
-					@components.CardWithShadow() {
-						<div class="flex flex-col w-auto">
-							<label for="mandatoryAttendance" class="text-lg font-semibold mb-2">¿Es la asistencia obligatoria?</label>
-							<div class="flex">
-								<div class="flex flex-col">
-									<input type="radio" value="true" name="mandatoryAttendance" class="radio radio-primary"/>
-									<p class="text-center">Sí</p>
-								</div>
-								<div class="flex flex-col ml-4">
-									<input type="radio" value="false" name="mandatoryAttendance" class="radio radio-primary"/>
-									<p class="text-center">No</p>
-								</div>
-							</div>
-						</div>
-					}
-					@components.CardWithShadow() {
-						<div class="flex flex-col w-auto">
-							<label for="mandatoryAttendance" class="text-lg font-semibold mb-2">
-								Cualidades
-							</label>
-							<div class="flex flex-wrap">
-								for _, tag := range props.Tags {
-									<button
-										x-on:click={ fmt.Sprintf("toggleTag(%d)", tag.ID) }
-										class="badge badge-lg badge-outline mt-2 cursor-pointer mr-2 h-auto"
-										:class={ fmt.Sprintf("$store.tagIds.includes(%d) ? 'badge-info' : 'badge-outline' ", tag.ID) }
-										type="button"
-									>
-										{ tag.Name }
-									</button>
-								}
-							</div>
-							<p class="text-error text-end mt-2" x-show={ "hasMaxTags" }>
-								Solo se pueden agregar hasta 3 cualidades
-							</p>
-						</div>
-					}
-					@components.CardWithShadow() {
-						<div class="flex flex-col w-auto height-auto">
-							<label for="comment" class="text-lg font-semibold mb-2">Comentario</label>
-							<textarea
-								class="textarea textarea-bordered h-24"
-								name="comment"
-								minlength="10"
-								maxlength="300"
-								placeholder="Escribir un comentario..."
-								rows="6"
-							></textarea>
-						</div>
-					}
-					<div class="flex w-100 md:w-auto md:justify-end">
-						<button
-							class="btn btn-primary mt-4"
-						>
-							Añadir evaluación
-						</button>
-					</div>
-				</form>
-			</div>
-			<div class="mt-2"></div>
-		}
+		@partials.AddProfessorReviewForm(partials.AddProfessorReviewFormProps{Professor: props.Professor, Tags: props.Tags, Errors: map[string]string{}})
 		<script>
 			document.addEventListener('alpine:init', () => {
 				Alpine.store('tagIds', []);
