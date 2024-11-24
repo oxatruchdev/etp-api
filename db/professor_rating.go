@@ -522,7 +522,8 @@ func createProfessorRating(ctx context.Context, tx *Tx, professorRating *etp.Pro
 			approvals_count, 
 			professor_id, 
 			course_id,
-			difficulty
+			difficulty,
+			school_id
 		)
 		VALUES (
 			@rating, 
@@ -535,7 +536,8 @@ func createProfessorRating(ctx context.Context, tx *Tx, professorRating *etp.Pro
 			@approvalsCount, 
 			@professorId, 
 			@courseId,
-			@difficulty
+			@difficulty,
+			@schoolId
 		) 
 		returning id
 	`
@@ -552,6 +554,7 @@ func createProfessorRating(ctx context.Context, tx *Tx, professorRating *etp.Pro
 		"professorId":         professorRating.ProfessorId,
 		"courseId":            professorRating.CourseId,
 		"difficulty":          professorRating.Difficulty,
+		"schoolId":            professorRating.SchoolId,
 	}
 
 	var id int

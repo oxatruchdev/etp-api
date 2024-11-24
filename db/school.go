@@ -119,6 +119,34 @@ func (ss *SchoolService) DeleteSchool(ctx context.Context, id int) error {
 	return tx.Commit(ctx)
 }
 
+func (s *SchoolService) GetSchoolProfessorsCount(ctx context.Context, id int) (int, error) {
+	tx, err := s.db.BeginTx(ctx)
+	if err != nil {
+		return 0, err
+	}
+
+	defer tx.Rollback(ctx)
+	count, err := getSchoolProfessorsCount(ctx, tx, id)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, tx.Commit(ctx)
+}
+
+func getSchoolProfessorsCount(ctx context.Context, tx *Tx, id int) (int, error) {
+	var count int
+
+	slog.Info("Getting school professors count for school: ", "id", id)
+	err := tx.QueryRow(ctx, "select count(*) from professor where school_id = @id", pgx.NamedArgs{"id": id}).Scan(&count)
+	if err != nil {
+		slog.Error("error while getting school professors count", "error", err, "school id", id)
+		return 0, err
+	}
+
+	return count, nil
+}
+
 func deleteSchool(ctx context.Context, tx *Tx, id int) error {
 	_, err := tx.Exec(ctx, "delete from school where id = @id", pgx.NamedArgs{"id": id})
 	if err != nil {
@@ -192,7 +220,7 @@ func getSchools(ctx context.Context, tx *Tx, filter etp.SchoolFilter) ([]*etp.Sc
 	where, args := []string{"1 = 1"}, pgx.NamedArgs{}
 
 	if filter.SchoolName != nil {
-		where = append(where, "unaccent(name) ilike @name or unaccent(abbreviation) ilike @name")
+		where = append(where, "unaccent(s.name) ilike @name or unaccent(s.abbreviation) ilike @name")
 		args["name"] = "%" + *filter.SchoolName + "%"
 	}
 
@@ -202,7 +230,7 @@ func getSchools(ctx context.Context, tx *Tx, filter etp.SchoolFilter) ([]*etp.Sc
 	}
 
 	if filter.SchoolId != nil {
-		where = append(where, "id = @id")
+		where = append(where, "s.id = @id")
 		args["id"] = *filter.SchoolId
 	}
 
@@ -210,7 +238,7 @@ func getSchools(ctx context.Context, tx *Tx, filter etp.SchoolFilter) ([]*etp.Sc
 		select 
 			count(*)
 		from
-			school
+			school s
 		where ` + strings.Join(where, " and ")
 
 	var n int
@@ -224,27 +252,51 @@ func getSchools(ctx context.Context, tx *Tx, filter etp.SchoolFilter) ([]*etp.Sc
 
 	query = `
 		select
-			id,
-			name,
-			abbreviation,
+			s.id,
+			s.name,
+			s.abbreviation,
 			metadata,
 			country_id,
-			created_at,
-			updated_at
+			s.created_at,
+			s.updated_at,
+			c.id as country_id,
+			c.name as country_name,
+			c.abbreviation as country_abbreviation,
+			c.flag_code
 		from
-			school
+			school s
+		left join country c on c.id = country_id
 		where ` + strings.Join(where, " and ") + `
-		order by id
-		` + FormatLimitOffset(filter.Offset, filter.Limit)
+		order by random()
+		` + FormatLimitOffset(filter.Limit, filter.Offset)
 
 	rows, err := tx.Query(ctx, query, args)
 	if err != nil {
 		return nil, 0, err
 	}
 
-	schools, err := pgx.CollectRows(rows, pgx.RowToStructByName[etp.School])
-	if err != nil {
-		return nil, 0, err
+	var schools []etp.School
+	for rows.Next() {
+		var school etp.School
+		var country etp.Country
+		if err := rows.Scan(
+			&school.ID,
+			&school.Name,
+			&school.Abbreviation,
+			&school.Metadata,
+			&school.CountryID,
+			&school.CreatedAt,
+			&school.UpdatedAt,
+			&country.ID,
+			&country.Name,
+			&country.Abbreviation,
+			&country.FlagCode,
+		); err != nil {
+			return nil, 0, err
+		}
+
+		school.Country = &country
+		schools = append(schools, school)
 	}
 
 	schoolPtrs := make([]*etp.School, len(schools))

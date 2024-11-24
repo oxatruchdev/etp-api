@@ -64,6 +64,8 @@ type ProfessorRating struct {
 	// Relations
 	Course      *Course    `json:"course,omitempty" db:"-"`
 	CourseId    int        `json:"courseId"`
+	School      *School    `json:"school,omitempty" db:"-"`
+	SchoolId    int        `json:"schoolId" db:"school_id"`
 	Professor   *Professor `json:"professor,omitempty" db:"-"`
 	ProfessorId int        `json:"professorId"`
 	User        *User      `json:"user,omitempty" db:"-"`

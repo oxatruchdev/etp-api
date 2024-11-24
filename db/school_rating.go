@@ -260,7 +260,7 @@ func getSchoolRatings(ctx context.Context, tx *Tx, filter *etp.SchoolRatingFilte
 		from 
 			school_rating
 		where ` + strings.Join(where, " and ") + `
-		` + FormatLimitOffset(filter.Offset, filter.Limit)
+		` + FormatLimitOffset(filter.Limit, filter.Offset)
 
 	rows, err := tx.Query(ctx, query, args)
 	if err != nil {

@@ -44,19 +44,6 @@ func (s *Server) search(w http.ResponseWriter, r *http.Request) {
 			slog.Error("Error while searching schools", "error", err)
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		}
-		slog.Info("Found schools", "schools", schools)
-
-		// Getting countries for each school
-		for i, school := range schools {
-			country, err := s.CountryService.GetCountryById(r.Context(), school.CountryID)
-			if err != nil {
-				slog.Error("Error while searching schools", "error", err)
-			}
-			schools[i].Country = country
-		}
-		if err != nil {
-			slog.Error("Error while searching schools", "error", err)
-		}
 
 		Render(w, r, http.StatusOK, partials.SchoolSearchResults(partials.SchoolSearchResultsProps{
 			Results: formatSchoolsResults(schools),

@@ -1,13 +1,51 @@
 package web
 
-import "github.com/Evalua-Tu-Profe/etp-api/cmd/web/components"
+import (
+	"github.com/Evalua-Tu-Profe/etp-api/cmd/web/components"
+	"github.com/Evalua-Tu-Profe/etp-api"
+	"fmt"
+)
 
 type HomeProps struct {
-	IsAuthenticated bool
+	IsAuthenticated        bool
+	Schools                []*etp.School
+	ProfessorCountBySchool map[int]int
 }
 
-templ Home() {
+templ Home(props HomeProps) {
 	@Base("Evalua Tu Profe") {
 		@components.Navbar()
+		@components.ContentContainer() {
+			<h1 class="text-3xl mt-4">
+				¡Bienvenido a Evalua Tu Profe!
+			</h1>
+			// Showing schools 
+			<div class="flex justify-between items-end">
+				<h2 class="text-3xl mt-4">
+					Universidades
+				</h2>
+				<a href={ templ.SafeURL("/schools") } class="link link-primary">
+					Ver todas las universidades
+				</a>
+			</div>
+			<div class="flex flex-wrap">
+				for _, school:= range props.Schools {
+					<a href={ templ.SafeURL(fmt.Sprintf("schools/%d", school.ID)) }>
+						@components.CardWithShadow() {
+							<p class="text-l">
+								{ school.Name }
+								<span class={ fmt.Sprintf("fi fi-%s", school.Country.FlagCode) }></span>
+							</p>
+							<p class="text-sm">
+								{ school.Country.Name }
+							</p>
+							<p class="text-sm">
+								{ fmt.Sprintf("%d", props.ProfessorCountBySchool[school.ID]) } Profesores
+							</p>
+						}
+					</a>
+				}
+			</div>
+		}
 	}
 }

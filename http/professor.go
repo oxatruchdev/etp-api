@@ -265,6 +265,12 @@ func (s *Server) CreateProfessorRating(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	professor, err := s.ProfessorService.GetProfessorById(r.Context(), idInt)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	err = s.ProfessorRatingService.CreateProfessorRating(r.Context(), &etp.ProfessorRating{
 		Rating:              rating,
 		Comment:             comment,
@@ -274,6 +280,7 @@ func (s *Server) CreateProfessorRating(w http.ResponseWriter, r *http.Request) {
 		TextbookRequired:    textbookRequired == "true",
 		ProfessorId:         idInt,
 		CourseId:            courseId,
+		SchoolId:            professor.SchoolId,
 	}, tagIds)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)

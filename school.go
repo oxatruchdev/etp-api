@@ -44,6 +44,9 @@ type SchoolService interface {
 	// Offset and Limit are used for pagination
 	GetSchools(ctx context.Context, filter SchoolFilter) ([]*School, int, error)
 
+	// Get Professors count by school
+	GetSchoolProfessorsCount(ctx context.Context, id int) (int, error)
+
 	// Creates a school
 	CreateSchool(ctx context.Context, school *School) error
 
