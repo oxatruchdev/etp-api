@@ -132,25 +132,6 @@ func (s *ProfessorService) GetProfessorTags(ctx context.Context, id int) ([]*etp
 	return tags, tx.Commit(ctx)
 }
 
-func (s *ProfessorService) GetLatestProfessors(ctx context.Context, filter etp.ProfessorFilter) ([]*etp.Professor, error) {
-	tx, err := s.db.BeginTx(ctx)
-	if err != nil {
-		return []*etp.Professor{}, err
-	}
-	defer tx.Rollback(ctx)
-
-	professors, err := getLatestProfessorsWithRatings(ctx, tx, filter)
-	if err != nil {
-		return []*etp.Professor{}, err
-	}
-
-	return professors, tx.Commit(ctx)
-}
-
-func getLatestProfessorsWithRatings(ctx context.Context, tx *Tx, filter etp.ProfessorFilter) ([]*etp.Professor, error) {
-	return nil, nil
-}
-
 func getProfessorPopularTags(ctx context.Context, tx *Tx, id int) ([]*etp.TagWithCount, error) {
 	query := `
 		WITH tag_counts AS (

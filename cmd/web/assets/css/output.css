@@ -2710,6 +2710,14 @@ html {
   max-width: 20rem;
 }
 
+.flex-1 {
+  flex: 1 1 0%;
+}
+
+.flex-auto {
+  flex: 1 1 auto;
+}
+
 .shrink-0 {
   flex-shrink: 0;
 }
@@ -2782,6 +2790,11 @@ html {
   gap: 1rem;
 }
 
+.gap-x-2 {
+  -moz-column-gap: 0.5rem;
+       column-gap: 0.5rem;
+}
+
 .gap-y-2 {
   row-gap: 0.5rem;
 }
@@ -2852,6 +2865,10 @@ html {
 .bg-yellow-400 {
   --tw-bg-opacity: 1;
   background-color: rgb(250 204 21 / var(--tw-bg-opacity));
+}
+
+.fill-red-500 {
+  fill: #ef4444;
 }
 
 .stroke-current {
@@ -3050,6 +3067,10 @@ html {
   }
 }
 
+.hover\:underline:hover {
+  text-decoration-line: underline;
+}
+
 @media (min-width: 640px) {
   .sm\:mx-auto {
     margin-left: auto;
@@ -3114,6 +3135,10 @@ html {
 
   .md\:max-w-screen-md {
     max-width: 768px;
+  }
+
+  .md\:flex-initial {
+    flex: 0 1 auto;
   }
 
   .md\:flex-row {

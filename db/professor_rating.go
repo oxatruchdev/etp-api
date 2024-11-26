@@ -118,6 +118,133 @@ func (prs *ProfessorRatingService) GetProfessorRatingsWithStats(ctx context.Cont
 	return &stats, tx.Commit(ctx)
 }
 
+func (s *ProfessorRatingService) GetLatestProfessorsRatings(ctx context.Context, filter etp.ProfessorRatingFilter) ([]*etp.ProfessorRating, error) {
+	tx, err := s.db.BeginTx(ctx)
+	if err != nil {
+		return []*etp.ProfessorRating{}, err
+	}
+	defer tx.Rollback(ctx)
+
+	ratings, err := getLatestProfessorsWithRatings(ctx, tx, filter)
+	if err != nil {
+		slog.Info("db: error while getting latest professors ratings", "error:", err)
+		return []*etp.ProfessorRating{}, err
+	}
+
+	return ratings, tx.Commit(ctx)
+}
+
+func getLatestProfessorsWithRatings(ctx context.Context, tx *Tx, filter etp.ProfessorRatingFilter) ([]*etp.ProfessorRating, error) {
+	where, args := []string{"1 = 1"}, pgx.NamedArgs{}
+
+	if v := filter.CourseId; v != nil {
+		where = append(where, "rr.course_id = :course_id")
+		args["course_id"] = *v
+	}
+
+	if v := filter.SchoolId; v != 0 {
+		where = append(where, "rr.school_id= :school_id")
+		args["school_id"] = v
+	}
+
+	query := `
+		WITH RankedRatings AS (
+			SELECT
+				*,
+				ROW_NUMBER() OVER (
+					PARTITION BY
+						professor_id
+					ORDER BY
+						created_at DESC
+				) as rn
+			FROM
+				professor_rating 
+		  WHERE ` + strings.Join(where, " AND ") + `
+		)
+		SELECT
+			rr.id,
+			rr.rating,
+			rr.difficulty,
+			rr.comment,
+			rr.created_at,
+			rr.would_take_again,
+			rr.textbook_required,
+			rr.mandatory_attendance,
+			rr.professor_id,
+			p.id as professor_id,
+			p.first_name,
+			p.last_name,
+			COALESCE(s.id, 0) as school_id,
+			COALESCE(s.name, '') as school_name,
+			COALESCE(s.abbreviation, '') as school_abbreviation,
+			COALESCE(country.abbreviation,''),
+			COALESCE(country.flag_code, ''),
+			c.name as course_name,
+			c.code,
+			c.id as course_id
+		FROM
+			RankedRatings rr
+			LEFT JOIN professor p on p.id = rr.professor_id
+			LEFT JOIN school s on rr.school_id = s.id
+			LEFT JOIN course c on rr.course_id = c.id
+			LEFT JOIN country on s.country_id = country.id
+		WHERE
+			rn = 1
+		ORDER BY
+			rr.created_at DESC
+		` + FormatLimitOffset(filter.Limit, filter.Offset)
+
+	rows, err := tx.Query(ctx, query, args)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	ratings := make([]*etp.ProfessorRating, 0)
+	for rows.Next() {
+		rating := etp.ProfessorRating{}
+		country := etp.Country{}
+		professor := etp.Professor{}
+		school := etp.School{}
+		course := etp.Course{}
+
+		err := rows.Scan(
+			&rating.ID,
+			&rating.Rating,
+			&rating.Difficulty,
+			&rating.Comment,
+			&rating.CreatedAt,
+			&rating.WouldTakeAgain,
+			&rating.TextbookRequired,
+			&rating.MandatoryAttendance,
+			&rating.ProfessorId,
+			&professor.ID,
+			&professor.FirstName,
+			&professor.LastName,
+			&school.ID,
+			&school.Name,
+			&school.Abbreviation,
+			&country.Abbreviation,
+			&country.FlagCode,
+			&course.Name,
+			&course.Code,
+			&course.ID,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		rating.Professor = &professor
+		rating.School = &school
+		rating.School.Country = &country
+		rating.Course = &course
+
+		ratings = append(ratings, &rating)
+	}
+
+	return ratings, nil
+}
+
 func getProfessorRatingStats(ctx context.Context, tx *Tx, filter etp.ProfessorRatingFilter) (etp.ProfessorRatingsStats, error) {
 	where, args := []string{"1 = 1"}, pgx.NamedArgs{}
 

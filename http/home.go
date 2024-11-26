@@ -36,10 +36,20 @@ func (s *Server) home(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Getting latest professors with reviews
+	// Get latest reviews
+	ratings, err := s.ProfessorRatingService.GetLatestProfessorsRatings(r.Context(), etp.ProfessorRatingFilter{
+		Offset: 0,
+		Limit:  5,
+	})
+	if err != nil {
+		slog.Error("Error while getting latest reviews", "error", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
 
 	Render(w, r, http.StatusOK, web.Home(web.HomeProps{
 		Schools:                schools,
 		ProfessorCountBySchool: professorCountBySchools,
+		Ratings:                ratings,
 	}))
 }

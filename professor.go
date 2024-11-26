@@ -58,9 +58,6 @@ type ProfessorService interface {
 
 	// Gets professor's most popular tags
 	GetProfessorTags(ctx context.Context, id int) ([]*TagWithCount, error)
-
-	// Gets latest professors with ratings
-	GetLatestProfessors(ctx context.Context, filter ProfessorFilter) ([]*Professor, error)
 }
 
 type ProfessorUpdate struct {

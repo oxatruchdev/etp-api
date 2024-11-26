@@ -82,6 +82,7 @@ type ProfessorRatingFilter struct {
 	ProfessorId       *int `json:"professorId" query:"professorId"`
 	CourseId          *int `json:"courseId" query:"courseId"`
 	IsApproved        bool
+	SchoolId          int `json:"schoolId" db:"school_id" query:"schoolId"`
 
 	Offset int `json:"offset" query:"offset"`
 	Limit  int `json:"limit" query:"limit"`
@@ -108,6 +109,8 @@ type ProfessorRatingService interface {
 
 	// Get professor ratings with stats
 	GetProfessorRatingsWithStats(ctx context.Context, filter ProfessorRatingFilter) (*ProfessorRatingsStats, error)
+
+	GetLatestProfessorsRatings(ctx context.Context, filter ProfessorRatingFilter) ([]*ProfessorRating, error)
 }
 
 type ProfessorRatingUpdate struct {
